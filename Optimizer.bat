@@ -48,6 +48,8 @@ echo    [12] Create Restore Point
 echo    [13] Remove Debloat Apps
 echo    [14] DWM Tweaks
 echo    [15] App Manager
+echo    [16] Advanced Privacy ^& Anti-Telemetry
+echo    [17] Uninstall Edge ^& OneDrive
 echo    [0] Exit
 echo.
 set /p choice="          Select an option: "
@@ -66,6 +68,8 @@ if /i "%choice%"=="12" goto CREATE_RESTORE_POINT
 if /i "%choice%"=="13" goto DEBLOAT
 if /i "%choice%"=="14" goto DWM_TWEAKS
 if /i "%choice%"=="15" goto APP_MANAGER
+if /i "%choice%"=="16" goto PRIVACY
+if /i "%choice%"=="17" goto UNINSTALL_EDGE_ONEDRIVE
 if /i "%choice%"=="0" goto EXIT
 goto MENU
 
@@ -476,6 +480,88 @@ echo.
 echo [STATUS] Uninstallation of %app_name% complete.
 pause
 goto APP_MANAGER
+
+:PRIVACY
+cls
+echo.
+echo            ╭────────────────────────────────────────────╮
+echo            │    ADVANCED PRIVACY & ANTI-TELEMETRY       │
+echo            ╰────────────────────────────────────────────╯
+echo.
+echo [INFO] This will disable telemetry tasks and block data collection domains.
+echo.
+set /p "confirm=Are you sure you want to continue? (Y/N): "
+if /i not "%confirm%"=="Y" goto MENU
+call :progress "Applying privacy settings"
+copy %windir%\System32\drivers\etc\hosts %windir%\System32\drivers\etc\hosts.bak >nul
+(
+    echo.
+    echo # Block Microsoft Telemetry
+    echo 0.0.0.0 vortex.data.microsoft.com
+    echo 0.0.0.0 settings-win.data.microsoft.com
+    echo 0.0.0.0 telecommand.telemetry.microsoft.com
+) >> %windir%\System32\drivers\etc\hosts
+schtasks /Change /TN "Microsoft\Windows\Customer Experience Improvement Program\Consolidator" /Disable
+schtasks /Change /TN "Microsoft\Windows\Customer Experience Improvement Program\KernelCeipTask" /Disable
+schtasks /Change /TN "Microsoft\Windows\Customer Experience Improvement Program\UsbCeip" /Disable
+echo.
+echo [STATUS] Privacy settings applied.
+pause
+goto MENU
+
+:UNINSTALL_EDGE_ONEDRIVE
+cls
+echo.
+echo            ╭────────────────────────────────────────────╮
+echo            │    UNINSTALL EDGE & ONEDRIVE               │
+echo            ╰────────────────────────────────────────────╯
+echo.
+echo [1] Uninstall Microsoft Edge
+echo [2] Uninstall OneDrive
+echo [0] Back to Main Menu
+echo.
+set /p "uninstall_choice=Select an option: "
+if /i "%uninstall_choice%"=="1" goto UNINSTALL_EDGE
+if /i "%uninstall_choice%"=="2" goto UNINSTALL_ONEDRIVE
+if /i "%uninstall_choice%"=="0" goto MENU
+goto UNINSTALL_EDGE_ONEDRIVE
+
+:UNINSTALL_EDGE
+cls
+echo.
+echo            ╭────────────────────────────────────────────╮
+echo            │    UNINSTALL MICROSOFT EDGE                │
+echo            ╰────────────────────────────────────────────╯
+echo.
+echo [WARNING] This is an advanced and potentially unstable operation.
+echo [WARNING] Removing Edge may cause unforeseen issues with Windows.
+echo.
+set /p "confirm=Are you absolutely sure you want to continue? (Y/N): "
+if /i not "%confirm%"=="Y" goto MENU
+call :progress "Uninstalling Microsoft Edge"
+powershell.exe -ExecutionPolicy Bypass -Command "Get-AppxPackage Microsoft.MicrosoftEdge* | Remove-AppxPackage"
+echo.
+echo [STATUS] Microsoft Edge has been uninstalled.
+pause
+goto MENU
+
+:UNINSTALL_ONEDRIVE
+cls
+echo.
+echo            ╭────────────────────────────────────────────╮
+echo            │    UNINSTALL ONEDRIVE                      │
+echo            ╰────────────────────────────────────────────╯
+echo.
+echo [WARNING] This will completely remove OneDrive from your system.
+echo.
+set /p "confirm=Are you sure you want to continue? (Y/N): "
+if /i not "%confirm%"=="Y" goto MENU
+call :progress "Uninstalling OneDrive"
+%SystemRoot%\SysWOW64\OneDriveSetup.exe /uninstall
+echo.
+echo [STATUS] OneDrive has been uninstalled.
+pause
+goto MENU
 
 :EXIT
 cls
