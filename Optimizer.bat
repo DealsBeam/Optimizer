@@ -47,6 +47,7 @@ echo    [11] Restore From Backup
 echo    [12] Create Restore Point
 echo    [13] Remove Debloat Apps
 echo    [14] DWM Tweaks
+echo    [15] App Manager
 echo    [0] Exit
 echo.
 set /p choice="          Select an option: "
@@ -64,6 +65,7 @@ if /i "%choice%"=="11" goto RESTORE
 if /i "%choice%"=="12" goto CREATE_RESTORE_POINT
 if /i "%choice%"=="13" goto DEBLOAT
 if /i "%choice%"=="14" goto DWM_TWEAKS
+if /i "%choice%"=="15" goto APP_MANAGER
 if /i "%choice%"=="0" goto EXIT
 goto MENU
 
@@ -427,6 +429,53 @@ echo.
 echo [STATUS] DWM tweaks applied successfully.
 pause
 goto MENU
+
+:APP_MANAGER
+cls
+echo.
+echo            ╭────────────────────────────────────────────╮
+echo            │    APP MANAGER (WINGET)                    │
+echo            ╰────────────────────────────────────────────╯
+echo.
+echo    [1] List Installed Apps
+echo    [2] Uninstall an App
+echo    [0] Back to Main Menu
+echo.
+set /p app_choice="          Select an option: "
+if /i "%app_choice%"=="1" goto LIST_APPS
+if /i "%app_choice%"=="2" goto UNINSTALL_APP
+if /i "%app_choice%"=="0" goto MENU
+goto APP_MANAGER
+
+:LIST_APPS
+cls
+echo.
+echo            ╭────────────────────────────────────────────╮
+echo            │    LIST INSTALLED APPS                     │
+echo            ╰────────────────────────────────────────────╯
+echo.
+call :progress "Gathering list of installed apps"
+winget list
+echo.
+echo [STATUS] App list generated.
+pause
+goto APP_MANAGER
+
+:UNINSTALL_APP
+cls
+echo.
+echo            ╭────────────────────────────────────────────╮
+echo            │    UNINSTALL AN APP                        │
+echo            ╰────────────────────────────────────────────╯
+echo.
+set /p "app_name=Enter the name of the app to uninstall: "
+if "%app_name%"=="" goto APP_MANAGER
+call :progress "Uninstalling %app_name%"
+winget uninstall %app_name%
+echo.
+echo [STATUS] Uninstallation of %app_name% complete.
+pause
+goto APP_MANAGER
 
 :EXIT
 cls
