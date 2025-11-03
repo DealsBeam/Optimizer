@@ -18,7 +18,7 @@ timeout /t 1 >nul
 net session >nul 2>&1
 if %errorLevel% neq 0 (
     echo =========================================================
-    echo                ADMINISTRATOR RIGHTS REQUIRED            
+    echo                ADMINISTRATOR RIGHTS REQUIRED
     echo  Run as administrator! Right-click -> "Run as administrator"
     echo =========================================================
     pause
@@ -43,6 +43,7 @@ echo    [7] Game Mode + GPU Priority- Optimizes for gaming
 echo    [8] Advanced Windows Tweaks - Prefetch, RAM, DirectX
 echo    [9] Reset Network Adapter
 echo    [10] Input Latency Tweaks
+echo    [11] Restore From Backup
 echo    [0] Exit
 echo.
 set /p choice="          Select an option: "
@@ -56,6 +57,7 @@ if /i "%choice%"=="7" goto GAMEMODE
 if /i "%choice%"=="8" goto ADVANCED_TWEAKS
 if /i "%choice%"=="9" goto ANIM_RSTNET
 if /i "%choice%"=="10" goto ANIM_INPUT
+if /i "%choice%"=="11" goto RESTORE
 if /i "%choice%"=="0" goto EXIT
 goto MENU
 
@@ -165,6 +167,13 @@ echo [1] Disable unnecessary services (SysMain, Telemetry, Xbox)
 echo [2] Restore default state
 set /p svch="Choose 1/2 or [Enter] to back: "
 if "%svch%"=="1" (
+    call :BACKUP "HKLM\SYSTEM\CurrentControlSet\Services\SysMain" "Services_SysMain"
+    call :BACKUP "HKLM\SYSTEM\CurrentControlSet\Services\DiagTrack" "Services_DiagTrack"
+    call :BACKUP "HKLM\SYSTEM\CurrentControlSet\Services\dmwappushservice" "Services_dmwappushservice"
+    call :BACKUP "HKLM\SYSTEM\CurrentControlSet\Services\XblAuthManager" "Services_XblAuthManager"
+    call :BACKUP "HKLM\SYSTEM\CurrentControlSet\Services\XblGameSave" "Services_XblGameSave"
+    call :BACKUP "HKLM\SYSTEM\CurrentControlSet\Services\XboxNetApiSvc" "Services_XboxNetApiSvc"
+    call :BACKUP "HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection" "Services_DataCollection"
     sc config "SysMain" start=disabled & sc stop "SysMain"
     sc config "DiagTrack" start=disabled & sc stop "DiagTrack"
     sc config "dmwappushservice" start=disabled & sc stop "dmwappushservice"
@@ -197,6 +206,9 @@ goto MENU
 :GAMEMODE
 cls
 call :progress "Gaming Optimization"
+call :BACKUP "HKLM\SYSTEM\CurrentControlSet\Control\Power\User\Settings" "Gaming_PowerSettings"
+call :BACKUP "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" "Gaming_MultimediaProfile"
+call :BACKUP "HKCU\Software\Microsoft\Windows\CurrentVersion\BackgroundAccessApplications" "Gaming_BackgroundApps"
 :: Enable game mode (if applicable)
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\Power\User\Settings" /v GameMode /t REG_DWORD /d 1 /f
 :: Boost GPU/CPU/RAM priority for games
@@ -216,6 +228,8 @@ goto MENU
 :ADVANCED_TWEAKS
 cls
 call :progress "Advanced Tweaks"
+call :BACKUP "HKLM\SOFTWARE\Microsoft\DirectX" "Advanced_DirectX"
+call :BACKUP "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" "Advanced_MemoryManagement"
 :: DirectX/VRAM tweaks, prefetch, priority optimization
 reg add "HKLM\SOFTWARE\Microsoft\DirectX" /v EnableAdaptiveSync /t REG_DWORD /d 1 /f
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" /v LargeSystemCache /t REG_DWORD /d 1 /f
@@ -251,6 +265,9 @@ echo [1] Apply lowest latency
 echo [2] Restore defaults
 set /p inlat="Choose 1/2 [Enter]-menu: "
 if "%inlat%"=="1" (
+    call :BACKUP "HKCU\Control Panel\Mouse" "Input_Mouse"
+    call :BACKUP "HKLM\SYSTEM\CurrentControlSet\Services\mouclass\Parameters" "Input_MouseParameters"
+    call :BACKUP "HKLM\SYSTEM\CurrentControlSet\Services\kbdclass\Parameters" "Input_KeyboardParameters"
     reg add "HKCU\Control Panel\Mouse" /v MouseSensitivity /t REG_SZ /d 10 /f
     reg add "HKCU\Control Panel\Mouse" /v MouseSpeed /t REG_SZ /d 0 /f
     reg add "HKCU\Control Panel\Mouse" /v MouseThreshold1 /t REG_SZ /d 0 /f
@@ -274,6 +291,43 @@ if "%inlat%"=="2" (
     pause
     goto MENU
 )
+goto MENU
+
+:: BACKUP a registry key
+:BACKUP
+set "key=%~1"
+set "desc=%~2"
+set "timestamp=%date:~10,4%%date:~4,2%%date:~7,2%_%time:~0,2%%time:~3,2%%time:~6,2%"
+set "filename=%desc%_%timestamp%.reg"
+if not exist backups md backups
+reg export "%key%" "backups\%filename%" >nul
+exit /b
+
+:: RESTORE from backup
+:RESTORE
+cls
+echo.
+echo            ╭────────────────────────────────────────────╮
+echo            │    RESTORE FROM BACKUP                     │
+echo            ╰────────────────────────────────────────────╯
+echo.
+if not exist backups\ (
+    echo [ERROR] No backup folder found.
+    pause
+    goto MENU
+)
+dir backups\*.reg /b /o:n
+echo.
+set /p "backupfile=Enter backup name to restore (e.g., Services_...reg): "
+if not exist "backups\%backupfile%" (
+    echo [ERROR] Backup file not found.
+    pause
+    goto MENU
+)
+reg import "backups\%backupfile%"
+echo.
+echo [STATUS] Restore complete! Restart recommended.
+pause
 goto MENU
 
 :EXIT
