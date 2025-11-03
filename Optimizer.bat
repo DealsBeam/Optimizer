@@ -44,6 +44,9 @@ echo    [8] Advanced Windows Tweaks - Prefetch, RAM, DirectX
 echo    [9] Reset Network Adapter
 echo    [10] Input Latency Tweaks
 echo    [11] Restore From Backup
+echo    [12] Create Restore Point
+echo    [13] Remove Debloat Apps
+echo    [14] DWM Tweaks
 echo    [0] Exit
 echo.
 set /p choice="          Select an option: "
@@ -58,6 +61,9 @@ if /i "%choice%"=="8" goto ADVANCED_TWEAKS
 if /i "%choice%"=="9" goto ANIM_RSTNET
 if /i "%choice%"=="10" goto ANIM_INPUT
 if /i "%choice%"=="11" goto RESTORE
+if /i "%choice%"=="12" goto CREATE_RESTORE_POINT
+if /i "%choice%"=="13" goto DEBLOAT
+if /i "%choice%"=="14" goto DWM_TWEAKS
 if /i "%choice%"=="0" goto EXIT
 goto MENU
 
@@ -327,6 +333,98 @@ if not exist "backups\%backupfile%" (
 reg import "backups\%backupfile%"
 echo.
 echo [STATUS] Restore complete! Restart recommended.
+pause
+goto MENU
+
+:CREATE_RESTORE_POINT
+cls
+echo.
+echo            ╭────────────────────────────────────────────╮
+echo            │    CREATE WINDOWS RESTORE POINT            │
+echo            ╰────────────────────────────────────────────╯
+echo.
+echo [INFO] This will create a system restore point.
+echo [INFO] This may take a few minutes. Please be patient.
+echo.
+set /p "confirm=Are you sure you want to continue? (Y/N): "
+if /i not "%confirm%"=="Y" goto MENU
+powershell.exe -ExecutionPolicy Bypass -Command "Checkpoint-Computer -Description 'Optimizer.bat Restore Point' -RestorePointType 'MODIFY_SETTINGS'"
+echo.
+echo [STATUS] Restore point created successfully.
+pause
+goto MENU
+
+:DEBLOAT
+cls
+echo.
+echo            ╭────────────────────────────────────────────╮
+echo            │    REMOVE DEBLOAT APPS                     │
+echo            ╰────────────────────────────────────────────╯
+echo.
+echo [INFO] This will remove pre-installed Microsoft Store apps.
+echo [INFO] This action is irreversible without reinstalling Windows.
+echo.
+set /p "confirm=Are you sure you want to continue? (Y/N): "
+if /i not "%confirm%"=="Y" goto MENU
+call :progress "Removing Debloat Apps"
+powershell.exe -ExecutionPolicy Bypass -Command ^
+"Get-AppxPackage *3DBuilder* | Remove-AppxPackage; ^
+ Get-AppxPackage *Microsoft.BingFinance* | Remove-AppxPackage; ^
+ Get-AppxPackage *Microsoft.BingNews* | Remove-AppxPackage; ^
+ Get-AppxPackage *Microsoft.BingSports* | Remove-AppxPackage; ^
+ Get-AppxPackage *Microsoft.BingWeather* | Remove-AppxPackage; ^
+ Get-AppxPackage *Microsoft.GetHelp* | Remove-AppxPackage; ^
+ Get-AppxPackage *Microsoft.Getstarted* | Remove-AppxPackage; ^
+ Get-AppxPackage *Microsoft.Messaging* | Remove-AppxPackage; ^
+ Get-AppxPackage *Microsoft.Microsoft3DViewer* | Remove-AppxPackage; ^
+ Get-AppxPackage *Microsoft.MicrosoftOfficeHub* | Remove-AppxPackage; ^
+ Get-AppxPackage *Microsoft.MicrosoftSolitaireCollection* | Remove-AppxPackage; ^
+ Get-AppxPackage *Microsoft.MixedReality.Portal* | Remove-AppxPackage; ^
+ Get-AppxPackage *Microsoft.Office.OneNote* | Remove-AppxPackage; ^
+ Get-AppxPackage *Microsoft.OneConnect* | Remove-AppxPackage; ^
+ Get-AppxPackage *Microsoft.People* | Remove-AppxPackage; ^
+ Get-AppxPackage *Microsoft.Print3D* | Remove-AppxPackage; ^
+ Get-AppxPackage *Microsoft.SkypeApp* | Remove-AppxPackage; ^
+ Get-AppxPackage *Microsoft.StorePurchaseApp* | Remove-AppxPackage; ^
+ Get-AppxPackage *Microsoft.Wallet* | Remove-AppxPackage; ^
+ Get-AppxPackage *Microsoft.Windows.Photos* | Remove-AppxPackage; ^
+ Get-AppxPackage *Microsoft.WindowsAlarms* | Remove-AppxPackage; ^
+ Get-AppxPackage *Microsoft.WindowsCamera* | Remove-AppxPackage; ^
+ Get-AppxPackage *Microsoft.WindowsCommunicationsApps* | Remove-AppxPackage; ^
+ Get-AppxPackage *Microsoft.WindowsFeedbackHub* | Remove-AppxPackage; ^
+ Get-AppxPackage *Microsoft.WindowsMaps* | Remove-AppxPackage; ^
+ Get-AppxPackage *Microsoft.WindowsSoundRecorder* | Remove-AppxPackage; ^
+ Get-AppxPackage *Microsoft.YourPhone* | Remove-AppxPackage; ^
+ Get-AppxPackage *Microsoft.ZuneMusic* | Remove-AppxPackage; ^
+ Get-AppxPackage *Microsoft.ZuneVideo* | Remove-AppxPackage; ^
+ Get-AppxPackage *king.com.CandyCrushSaga* | Remove-AppxPackage; ^
+ Get-AppxPackage *king.com.CandyCrushSodaSaga* | Remove-AppxPackage"
+echo.
+echo [STATUS] Debloat apps removed successfully.
+pause
+goto MENU
+
+:DWM_TWEAKS
+cls
+echo.
+echo            ╭────────────────────────────────────────────╮
+echo            │    DWM (DESKTOP WINDOW MANAGER) TWEAKS     │
+echo            ╰────────────────────────────────────────────╯
+echo.
+echo [INFO] This will apply tweaks to reduce DWM resource usage.
+echo.
+set /p "confirm=Are you sure you want to continue? (Y/N): "
+if /i not "%confirm%"=="Y" goto MENU
+call :progress "Applying DWM Tweaks"
+call :BACKUP "HKCU\Software\Microsoft\Windows\Dwm" "DWM_Tweaks_User"
+call :BACKUP "HKLM\SOFTWARE\Microsoft\Windows\Dwm" "DWM_Tweaks_Machine"
+reg add "HKCU\Software\Microsoft\Windows\Dwm" /v EnableAeroPeek /t REG_DWORD /d 0 /f
+reg add "HKCU\Software\Microsoft\Windows\Dwm" /v AlwaysShowThumbnails /t REG_DWORD /d 0 /f
+reg add "HKCU\Software\Microsoft\Windows\Dwm" /v ColorPrevalence /t REG_DWORD /d 0 /f
+reg add "HKCU\Software\Microsoft\Windows\Dwm" /v EnableBlurBehind /t REG_DWORD /d 0 /f
+reg add "HKLM\SOFTWARE\Microsoft\Windows\Dwm" /v ForceEffectMode /t REG_DWORD /d 1 /f
+echo.
+echo [STATUS] DWM tweaks applied successfully.
 pause
 goto MENU
 
