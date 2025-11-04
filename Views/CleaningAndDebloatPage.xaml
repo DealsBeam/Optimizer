@@ -1,0 +1,19 @@
+<Page
+    x:Class="OptimizerGUI.Views.CleaningAndDebloatPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <StackPanel Spacing="10" Padding="20">
+        <TextBlock Text="Cleaning &amp; Debloat" Style="{ThemeResource TitleTextBlockStyle}" />
+        <Button Content="System Cleaner" Click="SystemCleaner_Click" />
+        <Button Content="Extended Cleaner" Click="ExtendedCleaner_Click" />
+        <Button Content="Junk Finder" Click="JunkFinder_Click" />
+        <Button Content="Remove Bloatware (Simple)" Click="RemoveBloatware_Click" />
+        <Button Content="Advanced Debloater (User Selection)" Click="AdvancedDebloater_Click" />
+        <Button Content="Uninstall Edge &amp; OneDrive" Click="UninstallEdgeAndOneDrive_Click" />
+        <Button Content="Scheduled Cleaning" Click="ScheduledCleaning_Click" />
+    </StackPanel>
+</Page>

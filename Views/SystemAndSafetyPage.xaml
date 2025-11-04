@@ -1,0 +1,16 @@
+<Page
+    x:Class="OptimizerGUI.Views.SystemAndSafetyPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <StackPanel Spacing="10" Padding="20">
+        <TextBlock Text="System &amp; Safety" Style="{ThemeResource TitleTextBlockStyle}" />
+        <Button Content="System Information" Click="SystemInformation_Click" />
+        <Button Content="Advanced Privacy" Click="AdvancedPrivacy_Click" />
+        <Button Content="Create Restore Point" Click="CreateRestorePoint_Click" />
+        <Button Content="Restore Center" Click="RestoreCenter_Click" />
+    </StackPanel>
+</Page>
