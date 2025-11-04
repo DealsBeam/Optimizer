@@ -17,6 +17,24 @@ if '%errorlevel%' NEQ '0' (
 )
 
 :: =============================================================================
+:: WINDOWS 11 VERSION CHECK
+:: =============================================================================
+for /f "delims=" %%i in ('powershell -Command "(Get-CimInstance -ClassName Win32_OperatingSystem).Caption -match 'Windows 11'"') do set "is_win11=%%i"
+if /i not "%is_win11%"=="True" (
+    cls
+    echo.
+    echo            ╭────────────────────────────────────────────╮
+    echo            │    INCOMPATIBLE OPERATING SYSTEM           │
+    echo            ╰────────────────────────────────────────────╯
+    echo.
+    echo [ERROR] This script is designed for Windows 11 only.
+    echo Your current OS is not supported.
+    echo.
+    pause
+    exit /b
+)
+
+:: =============================================================================
 :: PRE-LOADER ANIMATION & INITIALIZATION
 :: =============================================================================
 set "spinner=|/-\"
@@ -38,7 +56,7 @@ timeout /t 1 >nul
 cls
 echo.
 echo            ╭────────────────────────────────────────────╮
-echo            │    WINDOWS 11 PC OPTIMIZER v8.0 (Revised)  │
+echo            │    WINDOWS 11 PC OPTIMIZER v8.0 (for Win 11) │
 echo            ╰────────────────────────────────────────────╯
 echo.
 echo    SYSTEM & NETWORK
@@ -907,8 +925,8 @@ echo    [1] Enable System-Wide Dark Mode
 echo    [2] Restore Default Light Mode
 echo    [3] Disable Visual Effects for Performance
 echo    [4] Restore Default Visual Effects
-echo    [5] Enable Classic (Windows 10) Context Menu
-echo    [6] Restore Default (Windows 11) Context Menu
+echo    [5] Enable Classic Context Menu
+echo    [6] Restore Default Context Menu
 echo    [0] Back to Main Menu
 echo.
 set /p "ui_choice=Select an option: "
@@ -993,8 +1011,8 @@ echo            ╭────────────────────�
 echo            │    TASKBAR CUSTOMIZATION                   │
 echo            ╰────────────────────────────────────────────╯
 echo.
-echo    [1] Align Taskbar to Left (Windows 10 Style)
-echo    [2] Restore Taskbar Center Alignment (Windows 11 Style)
+echo    [1] Align Taskbar to Left
+echo    [2] Restore Taskbar Center Alignment
 echo    [3] Add 'End Task' to Taskbar Context Menu
 echo    [4] Remove 'End Task' from Taskbar Context Menu
 echo    [0] Back to Main Menu
