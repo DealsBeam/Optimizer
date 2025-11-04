@@ -11,6 +11,7 @@ namespace OptimizerGUI
         {
             this.InitializeComponent();
             Title = "OptimizerGUI";
+            this.Loaded += (s, e) => NavigationView.SelectedItem = NavigationView.MenuItems[0];
         }
 
         private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
