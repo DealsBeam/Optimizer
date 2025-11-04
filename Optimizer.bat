@@ -30,7 +30,7 @@ if %errorLevel% neq 0 (
 cls
 echo.
 echo            ╭────────────────────────────────────────────╮
-echo            │    WINDOWS 11 PC OPTIMIZER v5.0            │
+echo            │    WINDOWS 11 PC OPTIMIZER v6.0            │
 echo            ╰────────────────────────────────────────────╯
 echo.
 echo    [1] Optimize Network        - Lower ping, stability
@@ -51,7 +51,11 @@ echo    [15] Uninstall Edge & OneDrive
 echo    [16] Create Restore Point
 echo    [17] Restore Center
 echo    [18] Desktop Context Menu Editor
-echo    [19] DWM Tweaks
+echo    [19] Ultimate Performance Power Plan
+echo    [20] Scheduled Cleaning
+echo    [21] Taskbar Customization
+echo    [22] UI & Personalization
+echo    [23] DWM Tweaks
 echo    [0] Exit
 echo.
 set /p choice="          Select an option: "
@@ -73,7 +77,11 @@ if /i "%choice%"=="15" goto UNINSTALL_EDGE_ONEDRIVE
 if /i "%choice%"=="16" goto CREATE_RESTORE_POINT
 if /i "%choice%"=="17" goto RESTORE_CENTER
 if /i "%choice%"=="18" goto CONTEXT_MENU_EDITOR
-if /i "%choice%"=="19" goto DWM_TWEAKS
+if /i "%choice%"=="19" goto ULTIMATE_PERFORMANCE
+if /i "%choice%"=="20" goto SCHEDULED_CLEANING
+if /i "%choice%"=="21" goto TASKBAR_CUSTOMIZATION
+if /i "%choice%"=="22" goto UI_PERSONALIZATION
+if /i "%choice%"=="23" goto DWM_TWEAKS
 if /i "%choice%"=="0" goto EXIT
 goto MENU
 
@@ -801,6 +809,236 @@ echo.
 echo [STATUS] 'Take Ownership' removed from the context menu.
 pause
 goto CONTEXT_MENU_EDITOR
+
+:UI_PERSONALIZATION
+cls
+echo.
+echo            ╭────────────────────────────────────────────╮
+echo            │    UI & PERSONALIZATION                    │
+echo            ╰────────────────────────────────────────────╯
+echo.
+echo    [1] Enable Dark Mode
+echo    [2] Disable Dark Mode
+echo    [3] Disable Visual Effects
+echo    [4] Restore Visual Effects
+echo    [5] Restore Classic Context Menu
+echo    [6] Restore Default Context Menu
+echo    [0] Back to Main Menu
+echo.
+set /p "ui_choice=Select an option: "
+if /i "%ui_choice%"=="1" goto ENABLE_DARK_MODE
+if /i "%ui_choice%"=="2" goto DISABLE_DARK_MODE
+if /i "%ui_choice%"=="3" goto DISABLE_VISUAL_EFFECTS
+if /i "%ui_choice%"=="4" goto RESTORE_VISUAL_EFFECTS
+if /i "%ui_choice%"=="5" goto RESTORE_CLASSIC_CONTEXT_MENU
+if /i "%ui_choice%"=="6" goto RESTORE_DEFAULT_CONTEXT_MENU
+if /i "%ui_choice%"=="0" goto MENU
+goto UI_PERSONALIZATION
+
+:ENABLE_DARK_MODE
+cls
+call :progress "Enabling Dark Mode"
+set "timestamp=%date:~10,4%%date:~4,2%%date:~7,2%_%time:~0,2%%time:~3,2%%time:~6,2%"
+set "backup_group=%timestamp%_DarkMode"
+call :BACKUP "HKCU\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" "DarkMode" "%backup_group%"
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" /v AppsUseLightTheme /t REG_DWORD /d 0 /f >nul
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" /v SystemUsesLightTheme /t REG_DWORD /d 0 /f >nul
+echo.
+echo [STATUS] Dark Mode has been enabled.
+pause
+goto UI_PERSONALIZATION
+
+:DISABLE_DARK_MODE
+cls
+call :progress "Disabling Dark Mode"
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" /v AppsUseLightTheme /t REG_DWORD /d 1 /f >nul
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" /v SystemUsesLightTheme /t REG_DWORD /d 1 /f >nul
+echo.
+echo [STATUS] Dark Mode has been disabled.
+pause
+goto UI_PERSONALIZATION
+
+:DISABLE_VISUAL_EFFECTS
+cls
+call :progress "Disabling Visual Effects"
+set "timestamp=%date:~10,4%%date:~4,2%%date:~7,2%_%time:~0,2%%time:~3,2%%time:~6,2%"
+set "backup_group=%timestamp%_VisualEffects"
+call :BACKUP "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\VisualEffects" "VisualEffects" "%backup_group%"
+call :BACKUP "HKCU\Control Panel\Desktop" "VisualEffects_Desktop" "%backup_group%"
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\VisualEffects" /v VisualFXSetting /t REG_DWORD /d 2 /f >nul
+reg add "HKCU\Control Panel\Desktop" /v UserPreferencesMask /t REG_BINARY /d 9012038010000000 /f >nul
+echo.
+echo [STATUS] Visual effects have been disabled.
+pause
+goto UI_PERSONALIZATION
+
+:RESTORE_VISUAL_EFFECTS
+cls
+call :progress "Restoring Visual Effects"
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\VisualEffects" /v VisualFXSetting /t REG_DWORD /d 0 /f >nul
+reg add "HKCU\Control Panel\Desktop" /v UserPreferencesMask /t REG_BINARY /d 9E2E078012000000 /f >nul
+echo.
+echo [STATUS] Visual effects have been restored.
+pause
+goto UI_PERSONALIZATION
+
+:RESTORE_CLASSIC_CONTEXT_MENU
+cls
+call :progress "Restoring Classic Context Menu"
+set "timestamp=%date:~10,4%%date:~4,2%%date:~7,2%_%time:~0,2%%time:~3,2%%time:~6,2%"
+set "backup_group=%timestamp%_ClassicContextMenu"
+call :BACKUP "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}" "ClassicContextMenu" "%backup_group%"
+reg add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f >nul
+echo.
+echo [STATUS] Classic context menu has been restored. Please restart Explorer.
+pause
+goto UI_PERSONALIZATION
+
+:RESTORE_DEFAULT_CONTEXT_MENU
+cls
+call :progress "Restoring Default Context Menu"
+reg delete "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}" /f >nul
+echo.
+echo [STATUS] Default context menu has been restored. Please restart Explorer.
+pause
+goto UI_PERSONALIZATION
+
+:TASKBAR_CUSTOMIZATION
+cls
+echo.
+echo            ╭────────────────────────────────────────────╮
+echo            │    TASKBAR CUSTOMIZATION                   │
+echo            ╰────────────────────────────────────────────╯
+echo.
+echo    [1] Align Taskbar to Left
+echo    [2] Restore Taskbar Center Alignment
+echo    [3] Add 'End Task' to Taskbar Context Menu
+echo    [4] Remove 'End Task' from Taskbar Context Menu
+echo    [0] Back to Main Menu
+echo.
+set /p "taskbar_choice=Select an option: "
+if /i "%taskbar_choice%"=="1" goto ALIGN_TASKBAR_LEFT
+if /i "%taskbar_choice%"=="2" goto RESTORE_TASKBAR_CENTER
+if /i "%taskbar_choice%"=="3" goto ADD_END_TASK
+if /i "%taskbar_choice%"=="4" goto REMOVE_END_TASK
+if /i "%taskbar_choice%"=="0" goto MENU
+goto TASKBAR_CUSTOMIZATION
+
+:ALIGN_TASKBAR_LEFT
+cls
+call :progress "Aligning Taskbar to Left"
+set "timestamp=%date:~10,4%%date:~4,2%%date:~7,2%_%time:~0,2%%time:~3,2%%time:~6,2%"
+set "backup_group=%timestamp%_TaskbarAlign"
+call :BACKUP "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "TaskbarAlign" "%backup_group%"
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v TaskbarAl /t REG_DWORD /d 0 /f >nul
+echo.
+echo [STATUS] Taskbar aligned to the left.
+pause
+goto TASKBAR_CUSTOMIZATION
+
+:RESTORE_TASKBAR_CENTER
+cls
+call :progress "Restoring Taskbar Center Alignment"
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v TaskbarAl /t REG_DWORD /d 1 /f >nul
+echo.
+echo [STATUS] Taskbar alignment restored to center.
+pause
+goto TASKBAR_CUSTOMIZATION
+
+:ADD_END_TASK
+cls
+call :progress "Adding 'End Task' to Taskbar"
+set "timestamp=%date:~10,4%%date:~4,2%%date:~7,2%_%time:~0,2%%time:~3,2%%time:~6,2%"
+set "backup_group=%timestamp%_EndTask"
+call :BACKUP "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "EndTask" "%backup_group%"
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v ShowTaskViewButton /t REG_DWORD /d 0 /f >nul
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v TaskbarEndTask /t REG_DWORD /d 1 /f >nul
+echo.
+echo [STATUS] 'End Task' has been added to the taskbar context menu.
+pause
+goto TASKBAR_CUSTOMIZATION
+
+:REMOVE_END_TASK
+cls
+call :progress "Removing 'End Task' from Taskbar"
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v TaskbarEndTask /t REG_DWORD /d 0 /f >nul
+echo.
+echo [STATUS] 'End Task' has been removed from the taskbar context menu.
+pause
+goto TASKBAR_CUSTOMIZATION
+
+:SCHEDULED_CLEANING
+cls
+echo.
+echo            ╭────────────────────────────────────────────╮
+echo            │    SCHEDULED CLEANING MANAGER              │
+echo            ╰────────────────────────────────────────────╯
+echo.
+echo    [1] Create Weekly Cleaning Tasks
+echo    [2] Remove Weekly Cleaning Tasks
+echo    [0] Back to Main Menu
+echo.
+set /p "cleaning_choice=Select an option: "
+if /i "%cleaning_choice%"=="1" goto CREATE_CLEANING_TASKS
+if /i "%cleaning_choice%"=="2" goto REMOVE_CLEANING_TASKS
+if /i "%cleaning_choice%"=="0" goto MENU
+goto SCHEDULED_CLEANING
+
+:CREATE_CLEANING_TASKS
+cls
+call :progress "Creating Weekly Cleaning Tasks"
+schtasks /create /tn "Optimizer Temp Clean" /tr "cmd.exe /c del /q /f /s %TEMP%\*" /sc weekly /d SUN /st 12:00 /ru "System" >nul
+schtasks /create /tn "Optimizer Update Cache Clean" /tr "cmd.exe /c del /q /f /s %SystemRoot%\SoftwareDistribution\Download\*" /sc weekly /d SUN /st 12:05 /ru "System" >nul
+echo.
+echo [STATUS] Weekly cleaning tasks for TEMP and Update Cache have been created.
+pause
+goto SCHEDULED_CLEANING
+
+:REMOVE_CLEANING_TASKS
+cls
+call :progress "Removing Weekly Cleaning Tasks"
+schtasks /delete /tn "Optimizer Temp Clean" /f >nul
+schtasks /delete /tn "Optimizer Update Cache Clean" /f >nul
+echo.
+echo [STATUS] Weekly cleaning tasks have been removed.
+pause
+goto SCHEDULED_CLEANING
+
+:ULTIMATE_PERFORMANCE
+cls
+echo.
+echo            ╭────────────────────────────────────────────╮
+echo            │    ULTIMATE PERFORMANCE POWER PLAN         │
+echo            ╰────────────────────────────────────────────╯
+echo.
+echo    [1] Activate Ultimate Performance
+echo    [2] Restore Balanced Power Plan
+echo    [0] Back to Main Menu
+echo.
+set /p "power_choice=Select an option: "
+if /i "%power_choice%"=="1" goto ACTIVATE_ULTIMATE_PERFORMANCE
+if /i "%power_choice%"=="2" goto RESTORE_BALANCED_POWER_PLAN
+if /i "%power_choice%"=="0" goto MENU
+goto ULTIMATE_PERFORMANCE
+
+:ACTIVATE_ULTIMATE_PERFORMANCE
+cls
+call :progress "Activating Ultimate Performance"
+powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61
+powercfg /setactive e9a42b02-d5df-448d-aa00-03f14749eb61
+echo.
+echo [STATUS] Ultimate Performance power plan has been activated.
+pause
+goto ULTIMATE_PERFORMANCE
+
+:RESTORE_BALANCED_POWER_PLAN
+cls
+call :progress "Restoring Balanced Power Plan"
+powercfg /setactive 381b4222-f694-41f0-9685-ff5bb260df2e
+echo.
+echo [STATUS] Balanced power plan has been restored.
+pause
+goto ULTIMATE_PERFORMANCE
 
 :EXIT
 cls
