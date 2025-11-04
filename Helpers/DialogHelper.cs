@@ -42,5 +42,32 @@ namespace OptimizerGUI.Helpers
             };
             await dialog.ShowAsync();
         }
+
+        public static async Task<bool> ShowConfirmationDialog(string title, string message, string primaryButtonText = "Continue", string secondaryButtonText = "Cancel", XamlRoot xamlRoot)
+        {
+            ContentDialog dialog = new ContentDialog
+            {
+                Title = title,
+                Content = message,
+                PrimaryButtonText = primaryButtonText,
+                SecondaryButtonText = secondaryButtonText,
+                DefaultButton = ContentDialogButton.Secondary,
+                XamlRoot = xamlRoot
+            };
+
+            var result = await dialog.ShowAsync();
+            return result == ContentDialogResult.Primary;
+        }
+
+        public static async Task<bool> ShowWarningDialog(string operation, string consequences, XamlRoot xamlRoot)
+        {
+            var message = $"⚠️ Warning\n\n" +
+                          $"Operation: {operation}\n\n" +
+                          $"Consequences:\n{consequences}\n\n" +
+                          $"A restore point will be created automatically.\n\n" +
+                          $"Do you want to continue?";
+
+            return await ShowConfirmationDialog("Confirm Operation", message, "Yes, Continue", "Cancel", xamlRoot);
+        }
     }
 }

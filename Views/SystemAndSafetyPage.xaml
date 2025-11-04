@@ -8,6 +8,11 @@
 
     <StackPanel Spacing="10" Padding="20">
         <TextBlock Text="System &amp; Safety" Style="{ThemeResource TitleTextBlockStyle}" />
+
+        <!-- Add progress indicator -->
+        <ProgressRing x:Name="ProgressRing" IsActive="False" Width="40" Height="40" />
+        <TextBlock x:Name="StatusText" Text="" Foreground="Gray" />
+
         <Button Content="System Information" Click="SystemInformation_Click" />
         <Button Content="Advanced Privacy" Click="AdvancedPrivacy_Click" />
         <Button Content="Create Restore Point" Click="CreateRestorePoint_Click" />

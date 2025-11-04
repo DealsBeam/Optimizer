@@ -1,5 +1,6 @@
+using OptimizerGUI.Helpers;
+using Serilog;
 using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace OptimizerGUI.ViewModels
@@ -8,86 +9,110 @@ namespace OptimizerGUI.ViewModels
     {
         public async Task AppManager()
         {
-            await RunProcess("cmd.exe", "/c start winget list");
+            Log.Information("Opening App Manager (winget)");
+            try
+            {
+                await ProcessHelper.RunProcessAsync("cmd.exe", "/c start winget list");
+                Log.Information("App Manager opened successfully");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed to open App Manager");
+                throw;
+            }
         }
 
         public async Task<string> StartupManager()
         {
-            return await RunProcessWithOutput("powershell.exe", "-Command \"Get-CimInstance Win32_StartupCommand | Format-Table -Property Name, Command, Location, User\"");
+            Log.Information("Getting startup applications");
+            try
+            {
+                var result = await ProcessHelper.RunProcessAsync("powershell.exe", "-Command \"Get-CimInstance Win32_StartupCommand | Format-Table -Property Name, Command, Location, User\"");
+                Log.Information("Successfully retrieved startup applications");
+                return result.Output;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed to get startup applications");
+                throw;
+            }
         }
 
         public async Task WindowsFeaturesManager()
         {
-            await RunProcess("cmd.exe", "/c start optionalfeatures.exe");
+            Log.Information("Opening Windows Features Manager");
+            try
+            {
+                await ProcessHelper.RunProcessAsync("cmd.exe", "/c start optionalfeatures.exe");
+                Log.Information("Windows Features Manager opened successfully");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed to open Windows Features Manager");
+                throw;
+            }
         }
 
         public async Task DesktopContextMenuEditor()
         {
-            await RunProcess("reg", "add \"HKCR\\AllFilesystemObjects\\shellex\\ContextMenuHandlers\\CopyTo\" /ve /d \"{C2FBB630-2971-11D1-A18C-00C04FD75D13}\" /f");
-            await RunProcess("reg", "add \"HKCR\\AllFilesystemObjects\\shellex\\ContextMenuHandlers\\MoveTo\" /ve /d \"{C2FBB631-2971-11D1-A18C-00C04FD75D13}\" /f");
+            Log.Information("Editing desktop context menu");
+            try
+            {
+                await ProcessHelper.RunProcessAsync("reg", "add \"HKCR\\AllFilesystemObjects\\shellex\\ContextMenuHandlers\\CopyTo\" /ve /d \"{C2FBB630-2971-11D1-A18C-00C04FD75D13}\" /f");
+                await ProcessHelper.RunProcessAsync("reg", "add \"HKCR\\AllFilesystemObjects\\shellex\\ContextMenuHandlers\\MoveTo\" /ve /d \"{C2FBB631-2971-11D1-A18C-00C04FD75D13}\" /f");
+                Log.Information("Desktop context menu edited successfully");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed to edit desktop context menu");
+                throw;
+            }
         }
 
         public async Task UIAndPersonalization()
         {
-            await RunProcess("reg", "add \"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize\" /v AppsUseLightTheme /t REG_DWORD /d 0 /f");
-            await RunProcess("reg", "add \"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize\" /v SystemUsesLightTheme /t REG_DWORD /d 0 /f");
+            Log.Information("Applying UI and personalization tweaks");
+            try
+            {
+                await ProcessHelper.RunProcessAsync("reg", "add \"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize\" /v AppsUseLightTheme /t REG_DWORD /d 0 /f");
+                await ProcessHelper.RunProcessAsync("reg", "add \"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize\" /v SystemUsesLightTheme /t REG_DWORD /d 0 /f");
+                Log.Information("UI and personalization tweaks applied successfully");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed to apply UI and personalization tweaks");
+                throw;
+            }
         }
 
         public async Task TaskbarCustomization()
         {
-            await RunProcess("reg", "add \"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced\" /v TaskbarAl /t REG_DWORD /d 0 /f");
+            Log.Information("Applying taskbar customization");
+            try
+            {
+                await ProcessHelper.RunProcessAsync("reg", "add \"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced\" /v TaskbarAl /t REG_DWORD /d 0 /f");
+                Log.Information("Taskbar customization applied successfully");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed to apply taskbar customization");
+                throw;
+            }
         }
 
         public async Task DWMTweaks()
         {
-            await RunProcess("reg", "add \"HKCU\\Software\\Microsoft\\Windows\\Dwm\" /v EnableAeroPeek /t REG_DWORD /d 0 /f");
-        }
-
-        private async Task RunProcess(string fileName, string arguments)
-        {
-            var process = new Process
+            Log.Information("Applying DWM tweaks");
+            try
             {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = fileName,
-                    Arguments = arguments,
-                    RedirectStandardOutput = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                }
-            };
-            process.Start();
-            await process.WaitForExitAsync();
-
-            if (process.ExitCode != 0)
-            {
-                throw new Exception($"Command failed with exit code {process.ExitCode}: {fileName} {arguments}");
+                await ProcessHelper.RunProcessAsync("reg", "add \"HKCU\\Software\\Microsoft\\Windows\\Dwm\" /v EnableAeroPeek /t REG_DWORD /d 0 /f");
+                Log.Information("DWM tweaks applied successfully");
             }
-        }
-
-        private async Task<string> RunProcessWithOutput(string fileName, string arguments)
-        {
-            var process = new Process
+            catch (Exception ex)
             {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = fileName,
-                    Arguments = arguments,
-                    RedirectStandardOutput = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                }
-            };
-            process.Start();
-            string output = await process.StandardOutput.ReadToEndAsync();
-            await process.WaitForExitAsync();
-
-            if (process.ExitCode != 0)
-            {
-                throw new Exception($"Command failed with exit code {process.ExitCode}: {fileName} {arguments}");
+                Log.Error(ex, "Failed to apply DWM tweaks");
+                throw;
             }
-
-            return output;
         }
     }
 }

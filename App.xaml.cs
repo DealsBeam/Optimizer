@@ -1,4 +1,7 @@
 using Microsoft.UI.Xaml;
+using OptimizerGUI.Helpers;
+using Serilog;
+using System;
 
 namespace OptimizerGUI
 {
@@ -9,12 +12,21 @@ namespace OptimizerGUI
         public App()
         {
             this.InitializeComponent();
+            Logger.Initialize(); // Add this
         }
 
         protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
-            m_window = new MainWindow();
-            m_window.Activate();
+            try
+            {
+                m_window = new MainWindow();
+                m_window.Activate();
+            }
+            catch (Exception ex)
+            {
+                Log.Fatal(ex, "Application startup failed");
+                throw;
+            }
         }
     }
 }

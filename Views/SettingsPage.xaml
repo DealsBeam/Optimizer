@@ -1,0 +1,19 @@
+<Page
+    x:Class="OptimizerGUI.Views.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <StackPanel Spacing="10" Padding="20">
+        <TextBlock Text="Settings" Style="{ThemeResource TitleTextBlockStyle}" />
+
+        <TextBlock Text="DNS Settings" Style="{ThemeResource SubtitleTextBlockStyle}" Margin="0,20,0,10" />
+        <TextBox x:Name="PrimaryDnsBox" Header="Primary DNS Server" PlaceholderText="1.1.1.1" />
+        <TextBox x:Name="SecondaryDnsBox" Header="Secondary DNS Server" PlaceholderText="1.0.0.1" />
+
+        <TextBlock Text="Safety Options" Style="{ThemeResource SubtitleTextBlockStyle}" Margin="0,20,0,10" />
+        <ToggleSwitch x:Name="AutoRestoreToggle" Header="Auto-create restore points" IsOn="True" />
+        <ToggleSwitch x:Name="ConfirmationsToggle" Header="Show confirmation dialogs" IsOn="True" />
+
+        <Button Content="Save Settings" Click="SaveSettings_Click" Margin="0,20,0,0" />
+    </StackPanel>
+</Page>
