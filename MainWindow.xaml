@@ -14,6 +14,11 @@
                 <NavigationViewItem Content="Management &amp; Customization" Tag="ManagementAndCustomization" Icon="Repair"/>
                 <NavigationViewItem Content="System &amp; Safety" Tag="SystemAndSafety" Icon="Permissions"/>
             </NavigationView.MenuItems>
+
+            <!-- Add Settings as footer -->
+            <NavigationView.FooterMenuItems>
+                <NavigationViewItem Content="Settings" Tag="Settings" Icon="Setting"/>
+            </NavigationView.FooterMenuItems>
             <Frame x:Name="ContentFrame"/>
         </NavigationView>
     </Grid>

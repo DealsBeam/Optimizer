@@ -1,50 +1,84 @@
+using OptimizerGUI.Helpers;
+using Serilog;
 using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace OptimizerGUI.ViewModels
 {
     public class SystemAndSafetyViewModel
     {
-        public async Task SystemInformation()
+        public async Task<string> SystemInformation()
         {
-            await RunProcess("powershell.exe", "-Command \"Get-ComputerInfo | Format-List -Property OsName, OsVersion, CsManufacturer, CsModel, CsProcessors, 'PhysiscalMemorySize', OsLastBootUpTime\"");
+            Log.Information("Getting system information");
+            try
+            {
+                var result = await ProcessHelper.RunProcessAsync("powershell.exe", "-Command \"Get-ComputerInfo | Format-List -Property OsName, OsVersion, CsManufacturer, CsModel, CsProcessors, 'PhysicalMemorySize', OsLastBootUpTime\"");
+                Log.Information("Successfully retrieved system information");
+                return result.Output;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed to get system information");
+                throw;
+            }
         }
 
         public async Task AdvancedPrivacy()
         {
-            await RunProcess("cmd.exe", "/c \"echo. >> %SystemRoot%\\System32\\drivers\\etc\\hosts & echo # Block Microsoft Telemetry >> %SystemRoot%\\System32\\drivers\\etc\\hosts & echo 0.0.0.0 vortex.data.microsoft.com >> %SystemRoot%\\System32\\drivers\\etc\\hosts\"");
+            Log.Information("Applying advanced privacy settings");
+            try
+            {
+                await ProcessHelper.RunProcessAsync("cmd.exe", "/c \"echo. >> %SystemRoot%\\System32\\drivers\\etc\\hosts & echo # Block Microsoft Telemetry >> %SystemRoot%\\System32\\drivers\\etc\\hosts & echo 0.0.0.0 vortex.data.microsoft.com >> %SystemRoot%\\System32\\drivers\\etc\\hosts\"");
+                Log.Information("Advanced privacy settings applied successfully");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed to apply advanced privacy settings");
+                throw;
+            }
         }
 
-        public async Task CreateRestorePoint()
+        public static async Task<bool> CreateRestorePointAsync(string description = "OptimizerGUI Operation")
         {
-            await RunProcess("powershell.exe", "-ExecutionPolicy Bypass -Command \"Checkpoint-Computer -Description 'OptimizerGUI Restore Point' -RestorePointType 'MODIFY_SETTINGS'\"");
+            try
+            {
+                Log.Information($"Creating restore point: {description}");
+                var result = await ProcessHelper.RunProcessAsync(
+                    "powershell.exe",
+                    $"-ExecutionPolicy Bypass -Command \"Checkpoint-Computer -Description '{description}' -RestorePointType 'MODIFY_SETTINGS'\"",
+                    throwOnError: false
+                );
+
+                if (result.Success)
+                {
+                    Log.Information("Restore point created successfully");
+                    return true;
+                }
+                else
+                {
+                    Log.Warning($"Restore point creation failed: {result.Error}");
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed to create restore point");
+                return false;
+            }
         }
 
         public async Task RestoreCenter()
         {
-            await RunProcess("cmd.exe", "/c start rstrui.exe");
-        }
-
-        private async Task RunProcess(string fileName, string arguments)
-        {
-            var process = new Process
+            Log.Information("Opening Restore Center");
+            try
             {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = fileName,
-                    Arguments = arguments,
-                    RedirectStandardOutput = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                }
-            };
-            process.Start();
-            await process.WaitForExitAsync();
-
-            if (process.ExitCode != 0)
+                await ProcessHelper.RunProcessAsync("cmd.exe", "/c start rstrui.exe");
+                Log.Information("Restore Center opened successfully");
+            }
+            catch (Exception ex)
             {
-                throw new Exception($"Command failed with exit code {process.ExitCode}: {fileName} {arguments}");
+                Log.Error(ex, "Failed to open Restore Center");
+                throw;
             }
         }
     }

@@ -1,5 +1,6 @@
+using OptimizerGUI.Helpers;
+using Serilog;
 using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace OptimizerGUI.ViewModels
@@ -8,29 +9,17 @@ namespace OptimizerGUI.ViewModels
     {
         public async Task CreateWeeklyCleaningTasks()
         {
-            await RunProcess("schtasks", "/create /tn \"Optimizer Temp Clean\" /tr \"cmd.exe /c del /q /f /s %TEMP%\\*\" /sc weekly /d SUN /st 12:00 /ru \"System\"");
-            await RunProcess("schtasks", "/create /tn \"Optimizer Update Cache Clean\" /tr \"cmd.exe /c del /q /f /s %SystemRoot%\\SoftwareDistribution\\Download\\*\" /sc weekly /d SUN /st 12:05 /ru \"System\"");
-        }
-
-        private async Task RunProcess(string fileName, string arguments)
-        {
-            var process = new Process
+            Log.Information("Creating weekly cleaning tasks");
+            try
             {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = fileName,
-                    Arguments = arguments,
-                    RedirectStandardOutput = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                }
-            };
-            process.Start();
-            await process.WaitForExitAsync();
-
-            if (process.ExitCode != 0)
+                await ProcessHelper.RunProcessAsync("schtasks", "/create /tn \"Optimizer Temp Clean\" /tr \"cmd.exe /c del /q /f /s %TEMP%\\*\" /sc weekly /d SUN /st 12:00 /ru \"System\"");
+                await ProcessHelper.RunProcessAsync("schtasks", "/create /tn \"Optimizer Update Cache Clean\" /tr \"cmd.exe /c del /q /f /s %SystemRoot%\\SoftwareDistribution\\Download\\*\" /sc weekly /d SUN /st 12:05 /ru \"System\"");
+                Log.Information("Weekly cleaning tasks created successfully");
+            }
+            catch (Exception ex)
             {
-                throw new Exception($"Command failed with exit code {process.ExitCode}: {fileName} {arguments}");
+                Log.Error(ex, "Failed to create weekly cleaning tasks");
+                throw;
             }
         }
     }

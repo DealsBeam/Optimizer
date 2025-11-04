@@ -15,31 +15,30 @@ namespace OptimizerGUI
 
         private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
-            if (args.IsSettingsSelected)
+            if (args.IsSettingsSelected || args.SelectedItem is NavigationViewItem item && item.Tag?.ToString() == "Settings")
             {
-                // Navigate to settings page if you have one
+                ContentFrame.Navigate(typeof(SettingsPage));
+                return;
             }
-            else
+
+            var selectedItem = (NavigationViewItem)args.SelectedItem;
+            if (selectedItem != null)
             {
-                var selectedItem = (NavigationViewItem)args.SelectedItem;
-                if (selectedItem != null)
+                string selectedItemTag = (string)selectedItem.Tag;
+                switch (selectedItemTag)
                 {
-                    string selectedItemTag = (string)selectedItem.Tag;
-                    switch (selectedItemTag)
-                    {
-                        case "SystemAndNetwork":
-                            ContentFrame.Navigate(typeof(SystemAndNetworkPage));
-                            break;
-                        case "CleaningAndDebloat":
-                            ContentFrame.Navigate(typeof(CleaningAndDebloatPage));
-                            break;
-                        case "ManagementAndCustomization":
-                            ContentFrame.Navigate(typeof(ManagementAndCustomizationPage));
-                            break;
-                        case "SystemAndSafety":
-                            ContentFrame.Navigate(typeof(SystemAndSafetyPage));
-                            break;
-                    }
+                    case "SystemAndNetwork":
+                        ContentFrame.Navigate(typeof(SystemAndNetworkPage));
+                        break;
+                    case "CleaningAndDebloat":
+                        ContentFrame.Navigate(typeof(CleaningAndDebloatPage));
+                        break;
+                    case "ManagementAndCustomization":
+                        ContentFrame.Navigate(typeof(ManagementAndCustomizationPage));
+                        break;
+                    case "SystemAndSafety":
+                        ContentFrame.Navigate(typeof(SystemAndSafetyPage));
+                        break;
                 }
             }
         }
