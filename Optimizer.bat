@@ -30,58 +30,71 @@ if %errorLevel% neq 0 (
 cls
 echo.
 echo            ╭────────────────────────────────────────────╮
-echo            │    WINDOWS 11 PC OPTIMIZER v6.0            │
+echo            │    WINDOWS 11 PC OPTIMIZER v7.0            │
 echo            ╰────────────────────────────────────────────╯
 echo.
+echo    SYSTEM & NETWORK OPTIMIZATIONS
 echo    [1] Optimize Network        - Lower ping, stability
-echo    [2] System Cleaner          - TEMP/cache/update
-echo    [3] Extended Cleaner        - Browsers/Explorer cache
-echo    [4] Junk Finder             - Deep log/dump removal
-echo    [5] Optimize DNS            - Cloudflare + flush
-echo    [6] Manage Services         - SysMain, Telemetry, Xbox
-echo    [7] Game Mode + GPU Priority- Optimizes for gaming
-echo    [8] Advanced Windows Tweaks - Prefetch, RAM, DirectX
-echo    [9] Reset Network Adapter
-echo    [10] Input Latency Tweaks
-echo    [11] App Manager
-echo    [12] Startup Manager
-echo    [13] Advanced Privacy        - Telemetry, hosts file
-echo    [14] Remove Bloatware
-echo    [15] Uninstall Edge & OneDrive
-echo    [16] Create Restore Point
-echo    [17] Restore Center
-echo    [18] Desktop Context Menu Editor
-echo    [19] Ultimate Performance Power Plan
-echo    [20] Scheduled Cleaning
+echo    [2] Optimize DNS            - Cloudflare + flush
+echo    [3] Reset Network Adapter
+echo    [4] Manage Services         - SysMain, Telemetry, Xbox
+echo    [5] Input Latency Tweaks
+echo    [6] Game Mode + GPU Priority- Optimizes for gaming
+echo    [7] Advanced Windows Tweaks - Prefetch, RAM, DirectX
+echo    [8] Ultimate Performance Power Plan
+echo.
+echo    CLEANING & DEBLOAT
+echo    [9] System Cleaner          - TEMP/cache/update
+echo    [10] Extended Cleaner        - Browsers/Explorer cache
+echo    [11] Junk Finder             - Deep log/dump removal
+echo    [12] Remove Bloatware (Simple)
+echo    [13] Advanced Debloater (User Selection)
+echo    [14] Uninstall Edge & OneDrive
+echo    [15] Scheduled Cleaning
+echo.
+echo    MANAGEMENT & CUSTOMIZATION
+echo    [16] App Manager
+echo    [17] Startup Manager
+echo    [18] Windows Features Manager
+echo    [19] Desktop Context Menu Editor
+echo    [20] UI & Personalization
 echo    [21] Taskbar Customization
-echo    [22] UI & Personalization
-echo    [23] DWM Tweaks
+echo    [22] DWM Tweaks
+echo.
+echo    SYSTEM & SAFETY
+echo    [23] System Information
+echo    [24] Advanced Privacy        - Telemetry, hosts file
+echo    [25] Create Restore Point
+echo    [26] Restore Center
 echo    [0] Exit
 echo.
 set /p choice="          Select an option: "
 if /i "%choice%"=="1" goto ANIM_NET
-if /i "%choice%"=="2" goto ANIM_CLEAN
-if /i "%choice%"=="3" goto ANIM_CLEANX
-if /i "%choice%"=="4" goto ANIM_JUNK
-if /i "%choice%"=="5" goto ANIM_DNS
-if /i "%choice%"=="6" goto ANIM_SERV
-if /i "%choice%"=="7" goto GAMEMODE
-if /i "%choice%"=="8" goto ADVANCED_TWEAKS
-if /i "%choice%"=="9" goto ANIM_RSTNET
-if /i "%choice%"=="10" goto ANIM_INPUT
-if /i "%choice%"=="11" goto APP_MANAGER
-if /i "%choice%"=="12" goto STARTUP_MANAGER
-if /i "%choice%"=="13" goto PRIVACY
-if /i "%choice%"=="14" goto DEBLOAT
-if /i "%choice%"=="15" goto UNINSTALL_EDGE_ONEDRIVE
-if /i "%choice%"=="16" goto CREATE_RESTORE_POINT
-if /i "%choice%"=="17" goto RESTORE_CENTER
-if /i "%choice%"=="18" goto CONTEXT_MENU_EDITOR
-if /i "%choice%"=="19" goto ULTIMATE_PERFORMANCE
-if /i "%choice%"=="20" goto SCHEDULED_CLEANING
+if /i "%choice%"=="2" goto ANIM_DNS
+if /i "%choice%"=="3" goto ANIM_RSTNET
+if /i "%choice%"=="4" goto ANIM_SERV
+if /i "%choice%"=="5" goto ANIM_INPUT
+if /i "%choice%"=="6" goto GAMEMODE
+if /i "%choice%"=="7" goto ADVANCED_TWEAKS
+if /i "%choice%"=="8" goto ULTIMATE_PERFORMANCE
+if /i "%choice%"=="9" goto ANIM_CLEAN
+if /i "%choice%"=="10" goto ANIM_CLEANX
+if /i "%choice%"=="11" goto ANIM_JUNK
+if /i "%choice%"=="12" goto DEBLOAT_SIMPLE
+if /i "%choice%"=="13" goto ADVANCED_DEBLOATER
+if /i "%choice%"=="14" goto UNINSTALL_EDGE_ONEDRIVE
+if /i "%choice%"=="15" goto SCHEDULED_CLEANING
+if /i "%choice%"=="16" goto APP_MANAGER
+if /i "%choice%"=="17" goto STARTUP_MANAGER
+if /i "%choice%"=="18" goto WINDOWS_FEATURES_MANAGER
+if /i "%choice%"=="19" goto CONTEXT_MENU_EDITOR
+if /i "%choice%"=="20" goto UI_PERSONALIZATION
 if /i "%choice%"=="21" goto TASKBAR_CUSTOMIZATION
-if /i "%choice%"=="22" goto UI_PERSONALIZATION
-if /i "%choice%"=="23" goto DWM_TWEAKS
+if /i "%choice%"=="22" goto DWM_TWEAKS
+if /i "%choice%"=="23" goto SYSTEM_INFORMATION
+if /i "%choice%"=="24" goto PRIVACY
+if /i "%choice%"=="25" goto CREATE_RESTORE_POINT
+if /i "%choice%"=="26" goto RESTORE_CENTER
 if /i "%choice%"=="0" goto EXIT
 goto MENU
 
@@ -444,7 +457,7 @@ echo [STATUS] Restore point created successfully.
 pause
 goto MENU
 
-:DEBLOAT
+:DEBLOAT_SIMPLE
 cls
 echo.
 echo            ╭────────────────────────────────────────────╮
@@ -1039,6 +1052,135 @@ echo.
 echo [STATUS] Balanced power plan has been restored.
 pause
 goto ULTIMATE_PERFORMANCE
+
+:SYSTEM_INFORMATION
+cls
+echo.
+echo            ╭────────────────────────────────────────────╮
+echo            │    SYSTEM INFORMATION                      │
+echo            ╰────────────────────────────────────────────╯
+echo.
+call :progress "Gathering System Information"
+powershell.exe -ExecutionPolicy Bypass -Command "Get-ComputerInfo | Select-Object OsName, OsVersion, CsManufacturer, CsModel, CsProcessors, PhysiscalMemorySize, OsLastBootUpTime"
+echo.
+echo [STATUS] System information gathered.
+pause
+goto MENU
+
+:ADVANCED_DEBLOATER
+cls
+echo.
+echo            ╭────────────────────────────────────────────╮
+echo            │    ADVANCED DEBLOATER                      │
+echo            ╰────────────────────────────────────────────╯
+echo.
+echo [INFO] This will list all removable Microsoft Store apps.
+echo [INFO] You can select which apps to uninstall.
+echo.
+set /p "confirm=Are you sure you want to continue? (Y/N): "
+if /i not "%confirm%"=="Y" goto MENU
+call :progress "Gathering list of removable apps"
+powershell.exe -ExecutionPolicy Bypass -Command "& {
+    $apps = Get-AppxPackage | Where-Object {$_.IsFramework -eq $false -and $_.NonRemovable -eq $false}
+    $i = 1
+    $apps | ForEach-Object {
+        Write-Host "[$i] $($_.Name)"
+        $i++
+    }
+}"
+echo.
+set /p "app_numbers=Enter the numbers of the apps to uninstall (e.g., 1,5,10): "
+powershell.exe -ExecutionPolicy Bypass -Command "& {
+    $apps = Get-AppxPackage | Where-Object {$_.IsFramework -eq $false -and $_.NonRemovable -eq $false}
+    $selection = '%app_numbers%'.Split(',') | ForEach-Object { $apps[$_.Trim() - 1] }
+    $selection | ForEach-Object {
+        Write-Host "Uninstalling $($_.Name)..."
+        Remove-AppxPackage -Package $_.PackageFullName
+    }
+}"
+echo.
+echo [STATUS] Selected apps have been uninstalled.
+pause
+goto MENU
+
+:WINDOWS_FEATURES_MANAGER
+cls
+echo.
+echo            ╭────────────────────────────────────────────╮
+echo            │    WINDOWS FEATURES MANAGER                │
+echo            ╰────────────────────────────────────────────╯
+echo.
+echo    [1] Enable Windows Subsystem for Linux (WSL)
+echo    [2] Disable Windows Subsystem for Linux (WSL)
+echo    [3] Enable Hyper-V
+echo    [4] Disable Hyper-V
+echo    [5] Enable Telnet Client
+echo    [6] Disable Telnet Client
+echo    [0] Back to Main Menu
+echo.
+set /p "feature_choice=Select an option: "
+if /i "%feature_choice%"=="1" goto ENABLE_WSL
+if /i "%feature_choice%"=="2" goto DISABLE_WSL
+if /i "%feature_choice%"=="3" goto ENABLE_HYPERV
+if /i "%feature_choice%"=="4" goto DISABLE_HYPERV
+if /i "%feature_choice%"=="5" goto ENABLE_TELNET
+if /i "%feature_choice%"=="6" goto DISABLE_TELNET
+if /i "%feature_choice%"=="0" goto MENU
+goto WINDOWS_FEATURES_MANAGER
+
+:ENABLE_WSL
+cls
+call :progress "Enabling WSL"
+dism /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart >nul
+echo.
+echo [STATUS] WSL has been enabled. A restart is required.
+pause
+goto WINDOWS_FEATURES_MANAGER
+
+:DISABLE_WSL
+cls
+call :progress "Disabling WSL"
+dism /online /disable-feature /featurename:Microsoft-Windows-Subsystem-Linux /norestart >nul
+echo.
+echo [STATUS] WSL has been disabled. A restart is required.
+pause
+goto WINDOWS_FEATURES_MANAGER
+
+:ENABLE_HYPERV
+cls
+call :progress "Enabling Hyper-V"
+dism /online /enable-feature /featurename:Microsoft-Hyper-V-All /all /norestart >nul
+echo.
+echo [STATUS] Hyper-V has been enabled. A restart is required.
+pause
+goto WINDOWS_FEATURES_MANAGER
+
+:DISABLE_HYPERV
+cls
+call :progress "Disabling Hyper-V"
+dism /online /disable-feature /featurename:Microsoft-Hyper-V-All /norestart >nul
+echo.
+echo [STATUS] Hyper-V has been disabled. A restart is required.
+pause
+goto WINDOWS_FEATURES_MANAGER
+
+:ENABLE_TELNET
+cls
+call :progress "Enabling Telnet Client"
+dism /online /enable-feature /featurename:TelnetClient /all /norestart >nul
+echo.
+echo [STATUS] Telnet Client has been enabled.
+pause
+goto WINDOWS_FEATURES_MANAGER
+
+:DISABLE_TELNET
+cls
+call :progress "Disabling Telnet Client"
+dism /online /disable-feature /featurename:TelnetClient /norestart >nul
+echo.
+echo [STATUS] Telnet Client has been disabled.
+pause
+goto WINDOWS_FEATURES_MANAGER
 
 :EXIT
 cls
