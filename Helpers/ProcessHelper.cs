@@ -18,7 +18,8 @@ namespace OptimizerGUI.Helpers
             string fileName,
             string arguments,
             bool captureOutput = true,
-            bool throwOnError = true)
+            bool throwOnError = true,
+            TimeSpan? timeout = null)
         {
             var process = new Process
             {
@@ -40,7 +41,29 @@ namespace OptimizerGUI.Helpers
                 string output = captureOutput ? await process.StandardOutput.ReadToEndAsync() : string.Empty;
                 string error = captureOutput ? await process.StandardError.ReadToEndAsync() : string.Empty;
 
-                await process.WaitForExitAsync();
+                if (timeout.HasValue)
+                {
+                    using (var cts = new System.Threading.CancellationTokenSource(timeout.Value))
+                    {
+                        try
+                        {
+                            await process.WaitForExitAsync(cts.Token);
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            try
+                            {
+                                process.Kill();
+                            }
+                            catch { /* Ignore exceptions if the process is already dead */ }
+                            throw new TimeoutException($"Process timed out after {timeout.Value.TotalSeconds} seconds: {fileName} {arguments}");
+                        }
+                    }
+                }
+                else
+                {
+                    await process.WaitForExitAsync();
+                }
 
                 var result = new ProcessResult
                 {

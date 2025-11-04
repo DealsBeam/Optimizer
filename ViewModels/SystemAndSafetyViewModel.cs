@@ -12,7 +12,7 @@ namespace OptimizerGUI.ViewModels
             Log.Information("Getting system information");
             try
             {
-                var result = await ProcessHelper.RunProcessAsync("powershell.exe", "-Command \"Get-ComputerInfo | Format-List -Property OsName, OsVersion, CsManufacturer, CsModel, CsProcessors, 'PhysicalMemorySize', OsLastBootUpTime\"");
+                var result = await ProcessHelper.RunProcessAsync("powershell.exe", "-Command \"Get-ComputerInfo | Format-List -Property OsName, OsVersion, CsManufacturer, CsModel, CsProcessors, 'PhysicalMemorySize', OsLastBootUpTime\"", timeout: TimeSpan.FromSeconds(30));
                 Log.Information("Successfully retrieved system information");
                 return result.Output;
             }
@@ -28,7 +28,7 @@ namespace OptimizerGUI.ViewModels
             Log.Information("Applying advanced privacy settings");
             try
             {
-                await ProcessHelper.RunProcessAsync("cmd.exe", "/c \"echo. >> %SystemRoot%\\System32\\drivers\\etc\\hosts & echo # Block Microsoft Telemetry >> %SystemRoot%\\System32\\drivers\\etc\\hosts & echo 0.0.0.0 vortex.data.microsoft.com >> %SystemRoot%\\System32\\drivers\\etc\\hosts\"");
+                await ProcessHelper.RunProcessAsync("cmd.exe", "/c \"echo. >> %SystemRoot%\\System32\\drivers\\etc\\hosts & echo # Block Microsoft Telemetry >> %SystemRoot%\\System32\\drivers\\etc\\hosts & echo 0.0.0.0 vortex.data.microsoft.com >> %SystemRoot%\\System32\\drivers\\etc\\hosts\"", timeout: TimeSpan.FromSeconds(30));
                 Log.Information("Advanced privacy settings applied successfully");
             }
             catch (Exception ex)
@@ -46,7 +46,8 @@ namespace OptimizerGUI.ViewModels
                 var result = await ProcessHelper.RunProcessAsync(
                     "powershell.exe",
                     $"-ExecutionPolicy Bypass -Command \"Checkpoint-Computer -Description '{description}' -RestorePointType 'MODIFY_SETTINGS'\"",
-                    throwOnError: false
+                    throwOnError: false,
+                    timeout: TimeSpan.FromSeconds(30)
                 );
 
                 if (result.Success)
@@ -72,7 +73,7 @@ namespace OptimizerGUI.ViewModels
             Log.Information("Opening Restore Center");
             try
             {
-                await ProcessHelper.RunProcessAsync("cmd.exe", "/c start rstrui.exe");
+                await ProcessHelper.RunProcessAsync("cmd.exe", "/c start rstrui.exe", timeout: TimeSpan.FromSeconds(30));
                 Log.Information("Restore Center opened successfully");
             }
             catch (Exception ex)
