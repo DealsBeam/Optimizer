@@ -5,6 +5,9 @@ using OptimizerGUI.Models;
 
 namespace OptimizerGUI.Helpers
 {
+    /// <summary>
+    /// Manages the loading and saving of application settings.
+    /// </summary>
     public static class SettingsManager
     {
         private static readonly string SettingsPath = Path.Combine(
@@ -13,6 +16,10 @@ namespace OptimizerGUI.Helpers
             "settings.json"
         );
 
+        /// <summary>
+        /// Loads the application settings from the settings file.
+        /// </summary>
+        /// <returns>An <see cref="AppSettings"/> object containing the application settings.</returns>
         public static AppSettings LoadSettings()
         {
             try
@@ -31,6 +38,10 @@ namespace OptimizerGUI.Helpers
             return new AppSettings();
         }
 
+        /// <summary>
+        /// Saves the application settings to the settings file.
+        /// </summary>
+        /// <param name="settings">The <see cref="AppSettings"/> object to save.</param>
         public static void SaveSettings(AppSettings settings)
         {
             try

@@ -7,16 +7,27 @@ using System.Threading.Tasks;
 
 namespace OptimizerGUI.Views
 {
+    /// <summary>
+    /// Represents the page for the System and Safety feature.
+    /// </summary>
     public sealed partial class SystemAndSafetyPage : Page
     {
         private SystemAndSafetyViewModel ViewModel { get; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SystemAndSafetyPage"/> class.
+        /// </summary>
         public SystemAndSafetyPage()
         {
             this.InitializeComponent();
             ViewModel = new SystemAndSafetyViewModel();
         }
 
+        /// <summary>
+        /// Handles the click event for the system information button.
+        /// </summary>
+        /// <param name="sender">The sender of the event.</param>
+        /// <param name="e">The event arguments.</param>
         private async void SystemInformation_Click(object sender, RoutedEventArgs e)
         {
             ProgressRing.IsActive = true;
@@ -37,6 +48,11 @@ namespace OptimizerGUI.Views
             }
         }
 
+        /// <summary>
+        /// Handles the click event for the advanced privacy button.
+        /// </summary>
+        /// <param name="sender">The sender of the event.</param>
+        /// <param name="e">The event arguments.</param>
         private async void AdvancedPrivacy_Click(object sender, RoutedEventArgs e)
         {
             var confirmed = await DialogHelper.ShowWarningDialog(
@@ -98,6 +114,11 @@ namespace OptimizerGUI.Views
             }
         }
 
+        /// <summary>
+        /// Handles the click event for the restore center button.
+        /// </summary>
+        /// <param name="sender">The sender of the event.</param>
+        /// <param name="e">The event arguments.</param>
         private async void RestoreCenter_Click(object sender, RoutedEventArgs e)
         {
             ProgressRing.IsActive = true;

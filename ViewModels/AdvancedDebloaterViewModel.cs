@@ -14,7 +14,7 @@ namespace OptimizerGUI.ViewModels
             Log.Information("Getting list of removable apps");
             try
             {
-                var result = await ProcessHelper.RunProcessAsync("powershell", "-Command \"Get-AppxPackage | Where-Object {$_.IsFramework -eq $false -and $_.NonRemovable -eq $false} | ForEach-Object { $_.Name }\"", timeout: TimeSpan.FromSeconds(30));
+                var result = await ProcessHelper.RunProcessAsync("powershell", "-Command \"Get-AppxPackage | Where-Object {$_.IsFramework -eq $false -and $_.NonRemovable -eq $false} | ForEach-Object { $_.Name }\"");
                 Log.Information("Successfully retrieved list of removable apps");
                 return result.Output.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).ToList();
             }
@@ -33,7 +33,7 @@ namespace OptimizerGUI.ViewModels
                 foreach (var appName in appNames)
                 {
                     Log.Information("Uninstalling app: {AppName}", appName);
-                    await ProcessHelper.RunProcessAsync("powershell", $"-ExecutionPolicy Bypass -Command \"Get-AppxPackage '{appName}' | Remove-AppxPackage\"", timeout: TimeSpan.FromSeconds(30));
+                    await ProcessHelper.RunProcessAsync("powershell", $"-ExecutionPolicy Bypass -Command \"Get-AppxPackage '{appName}' | Remove-AppxPackage\"");
                 }
                 Log.Information("Successfully uninstalled selected apps");
             }
