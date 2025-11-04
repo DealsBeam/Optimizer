@@ -18,11 +18,32 @@ namespace OptimizerGUI.ViewModels
 
         public async Task OptimizeDNS()
         {
-            await RunProcess("netsh", "interface ip set dns \"Ethernet\" static 1.1.1.1 primary");
-            await RunProcess("netsh", "interface ip add dns \"Ethernet\" 1.0.0.1 index=2");
-            await RunProcess("netsh", "interface ip set dns \"Wi-Fi\" static 1.1.1.1 primary");
-            await RunProcess("netsh", "interface ip add dns \"Wi-Fi\" 1.0.0.1 index=2");
+            var adapters = await GetActiveAdapters();
+            foreach (var adapter in adapters)
+            {
+                await RunProcess("netsh", $"interface ip set dns \"{adapter}\" static 1.1.1.1 primary");
+                await RunProcess("netsh", $"interface ip add dns \"{adapter}\" 1.0.0.1 index=2");
+            }
             await RunProcess("ipconfig", "/flushdns");
+        }
+
+        private async Task<string[]> GetActiveAdapters()
+        {
+            var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "powershell",
+                    Arguments = "-Command \"Get-NetAdapter -Physical | Where-Object {$_.Status -eq 'Up'} | ForEach-Object { $_.Name }\"",
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                }
+            };
+            process.Start();
+            string output = await process.StandardOutput.ReadToEndAsync();
+            await process.WaitForExitAsync();
+            return output.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
         }
 
         public async Task ResetNetworkAdapter()
@@ -84,6 +105,11 @@ namespace OptimizerGUI.ViewModels
             };
             process.Start();
             await process.WaitForExitAsync();
+
+            if (process.ExitCode != 0)
+            {
+                throw new Exception($"Command failed with exit code {process.ExitCode}: {fileName} {arguments}");
+            }
         }
     }
 }
