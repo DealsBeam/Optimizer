@@ -30,7 +30,7 @@ if %errorLevel% neq 0 (
 cls
 echo.
 echo            ╭────────────────────────────────────────────╮
-echo            │    WINDOWS 11 PC OPTIMIZER v3.2            │
+echo            │    WINDOWS 11 PC OPTIMIZER v4.0            │
 echo            ╰────────────────────────────────────────────╯
 echo.
 echo    [1] Optimize Network        - Lower ping, stability
@@ -43,13 +43,12 @@ echo    [7] Game Mode + GPU Priority- Optimizes for gaming
 echo    [8] Advanced Windows Tweaks - Prefetch, RAM, DirectX
 echo    [9] Reset Network Adapter
 echo    [10] Input Latency Tweaks
-echo    [11] Restore From Backup
-echo    [12] Create Restore Point
-echo    [13] Remove Debloat Apps
-echo    [14] DWM Tweaks
-echo    [15] App Manager
-echo    [16] Advanced Privacy ^& Anti-Telemetry
-echo    [17] Uninstall Edge ^& OneDrive
+echo    [11] App Manager
+echo    [12] Advanced Privacy        - Telemetry, hosts file
+echo    [13] Remove Bloatware
+echo    [14] Uninstall Edge & OneDrive
+echo    [15] Create Restore Point
+echo    [16] Restore Center
 echo    [0] Exit
 echo.
 set /p choice="          Select an option: "
@@ -63,13 +62,12 @@ if /i "%choice%"=="7" goto GAMEMODE
 if /i "%choice%"=="8" goto ADVANCED_TWEAKS
 if /i "%choice%"=="9" goto ANIM_RSTNET
 if /i "%choice%"=="10" goto ANIM_INPUT
-if /i "%choice%"=="11" goto RESTORE
-if /i "%choice%"=="12" goto CREATE_RESTORE_POINT
+if /i "%choice%"=="11" goto APP_MANAGER
+if /i "%choice%"=="12" goto PRIVACY
 if /i "%choice%"=="13" goto DEBLOAT
-if /i "%choice%"=="14" goto DWM_TWEAKS
-if /i "%choice%"=="15" goto APP_MANAGER
-if /i "%choice%"=="16" goto PRIVACY
-if /i "%choice%"=="17" goto UNINSTALL_EDGE_ONEDRIVE
+if /i "%choice%"=="14" goto UNINSTALL_EDGE_ONEDRIVE
+if /i "%choice%"=="15" goto CREATE_RESTORE_POINT
+if /i "%choice%"=="16" goto RESTORE_CENTER
 if /i "%choice%"=="0" goto EXIT
 goto MENU
 
@@ -239,7 +237,7 @@ goto MENU
 
 :ADVANCED_TWEAKS
 cls
-call :progress "Advanced Tweaks"
+call :progress "Advanced Windows Tweaks"
 call :BACKUP "HKLM\SOFTWARE\Microsoft\DirectX" "Advanced_DirectX"
 call :BACKUP "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" "Advanced_MemoryManagement"
 :: DirectX/VRAM tweaks, prefetch, priority optimization
@@ -315,18 +313,34 @@ if not exist backups md backups
 reg export "%key%" "backups\%filename%" >nul
 exit /b
 
-:: RESTORE from backup
-:RESTORE
+:RESTORE_CENTER
 cls
 echo.
 echo            ╭────────────────────────────────────────────╮
-echo            │    RESTORE FROM BACKUP                     │
+echo            │    RESTORE CENTER                          │
+echo            ╰────────────────────────────────────────────╯
+echo.
+echo    [1] Restore Registry from Backup
+echo    [2] Restore Hosts File
+echo    [0] Back to Main Menu
+echo.
+set /p "restore_choice=Select a restore option: "
+if /i "%restore_choice%"=="1" goto RESTORE_REGISTRY
+if /i "%restore_choice%"=="2" goto RESTORE_HOSTS
+if /i "%restore_choice%"=="0" goto MENU
+goto RESTORE_CENTER
+
+:RESTORE_REGISTRY
+cls
+echo.
+echo            ╭────────────────────────────────────────────╮
+echo            │    RESTORE REGISTRY FROM BACKUP            │
 echo            ╰────────────────────────────────────────────╯
 echo.
 if not exist backups\ (
     echo [ERROR] No backup folder found.
     pause
-    goto MENU
+    goto RESTORE_CENTER
 )
 dir backups\*.reg /b /o:n
 echo.
@@ -334,13 +348,30 @@ set /p "backupfile=Enter backup name to restore (e.g., Services_...reg): "
 if not exist "backups\%backupfile%" (
     echo [ERROR] Backup file not found.
     pause
-    goto MENU
+    goto RESTORE_CENTER
 )
 reg import "backups\%backupfile%"
 echo.
 echo [STATUS] Restore complete! Restart recommended.
 pause
-goto MENU
+goto RESTORE_CENTER
+
+:RESTORE_HOSTS
+cls
+echo.
+echo            ╭────────────────────────────────────────────╮
+echo            │    RESTORE HOSTS FILE                      │
+echo            ╰────────────────────────────────────────────╯
+echo.
+if not exist %windir%\System32\drivers\etc\hosts.bak (
+    echo [ERROR] No hosts file backup found.
+    pause
+    goto RESTORE_CENTER
+)
+copy %windir%\System32\drivers\etc\hosts.bak %windir%\System32\drivers\etc\hosts /Y >nul
+echo [STATUS] Hosts file has been restored from backup.
+pause
+goto RESTORE_CENTER
 
 :CREATE_RESTORE_POINT
 cls
@@ -364,7 +395,7 @@ goto MENU
 cls
 echo.
 echo            ╭────────────────────────────────────────────╮
-echo            │    REMOVE DEBLOAT APPS                     │
+echo            │    REMOVE BLOATWARE APPS                   │
 echo            ╰────────────────────────────────────────────╯
 echo.
 echo [INFO] This will remove pre-installed Microsoft Store apps.
@@ -372,7 +403,7 @@ echo [INFO] This action is irreversible without reinstalling Windows.
 echo.
 set /p "confirm=Are you sure you want to continue? (Y/N): "
 if /i not "%confirm%"=="Y" goto MENU
-call :progress "Removing Debloat Apps"
+call :progress "Removing Bloatware Apps"
 powershell.exe -ExecutionPolicy Bypass -Command ^
 "Get-AppxPackage *3DBuilder* | Remove-AppxPackage; ^
  Get-AppxPackage *Microsoft.BingFinance* | Remove-AppxPackage; ^
@@ -406,7 +437,7 @@ powershell.exe -ExecutionPolicy Bypass -Command ^
  Get-AppxPackage *king.com.CandyCrushSaga* | Remove-AppxPackage; ^
  Get-AppxPackage *king.com.CandyCrushSodaSaga* | Remove-AppxPackage"
 echo.
-echo [STATUS] Debloat apps removed successfully.
+echo [STATUS] Bloatware apps removed successfully.
 pause
 goto MENU
 
@@ -414,7 +445,7 @@ goto MENU
 cls
 echo.
 echo            ╭────────────────────────────────────────────╮
-echo            │    DWM (DESKTOP WINDOW MANAGER) TWEAKS     │
+echo            │    DWM TWEAKS                              │
 echo            ╰────────────────────────────────────────────╯
 echo.
 echo [INFO] This will apply tweaks to reduce DWM resource usage.
@@ -438,7 +469,7 @@ goto MENU
 cls
 echo.
 echo            ╭────────────────────────────────────────────╮
-echo            │    APP MANAGER (WINGET)                    │
+echo            │    APP MANAGER                             │
 echo            ╰────────────────────────────────────────────╯
 echo.
 echo    [1] List Installed Apps
@@ -485,7 +516,7 @@ goto APP_MANAGER
 cls
 echo.
 echo            ╭────────────────────────────────────────────╮
-echo            │    ADVANCED PRIVACY & ANTI-TELEMETRY       │
+echo            │    ADVANCED PRIVACY                        │
 echo            ╰────────────────────────────────────────────╯
 echo.
 echo [INFO] This will disable telemetry tasks and block data collection domains.
@@ -501,9 +532,9 @@ copy %windir%\System32\drivers\etc\hosts %windir%\System32\drivers\etc\hosts.bak
     echo 0.0.0.0 settings-win.data.microsoft.com
     echo 0.0.0.0 telecommand.telemetry.microsoft.com
 ) >> %windir%\System32\drivers\etc\hosts
-schtasks /Change /TN "Microsoft\Windows\Customer Experience Improvement Program\Consolidator" /Disable
-schtasks /Change /TN "Microsoft\Windows\Customer Experience Improvement Program\KernelCeipTask" /Disable
-schtasks /Change /TN "Microsoft\Windows\Customer Experience Improvement Program\UsbCeip" /Disable
+schtasks /Change /TN "Microsoft\Windows\Customer Experience Improvement Program\Consolidator" /Disable >nul
+schtasks /Change /TN "Microsoft\Windows\Customer Experience Improvement Program\KernelCeipTask" /Disable >nul
+schtasks /Change /TN "Microsoft\Windows\Customer Experience Improvement Program\UsbCeip" /Disable >nul
 echo.
 echo [STATUS] Privacy settings applied.
 pause
@@ -539,7 +570,12 @@ echo.
 set /p "confirm=Are you absolutely sure you want to continue? (Y/N): "
 if /i not "%confirm%"=="Y" goto MENU
 call :progress "Uninstalling Microsoft Edge"
-powershell.exe -ExecutionPolicy Bypass -Command "Get-AppxPackage Microsoft.MicrosoftEdge* | Remove-AppxPackage"
+cd "C:\Program Files (x86)\Microsoft\Edge\Application"
+for /d %%I in (*) do (
+    if exist "%%I\Installer\setup.exe" (
+        "%%I\Installer\setup.exe" --uninstall --system-level --verbose-logging --force-uninstall
+    )
+)
 echo.
 echo [STATUS] Microsoft Edge has been uninstalled.
 pause
@@ -558,6 +594,8 @@ set /p "confirm=Are you sure you want to continue? (Y/N): "
 if /i not "%confirm%"=="Y" goto MENU
 call :progress "Uninstalling OneDrive"
 %SystemRoot%\SysWOW64\OneDriveSetup.exe /uninstall
+call :BACKUP "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace" "OneDrive_Desktop_Namespace"
+reg delete "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace\{018D5C66-4533-4307-9B53-224DE2ED1FE6}" /f >nul
 echo.
 echo [STATUS] OneDrive has been uninstalled.
 pause
