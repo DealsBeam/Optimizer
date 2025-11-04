@@ -1,8 +1,24 @@
 @echo off
-chcp 65001 >nul
-mode con: cols=80 lines=33
+:: Suppress command echoing to keep the output clean.
 
-:: PRE-LOADER ANIMATION
+:: Set the code page to UTF-8 to support a wide range of characters.
+chcp 65001 >nul
+
+:: Set a consistent window size for better presentation.
+mode con: cols=80 lines=40
+
+:: Elevate to Administrator privileges if not already running with them.
+:: This is a more robust way to check and request elevation.
+>nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
+if '%errorlevel%' NEQ '0' (
+    echo Requesting administrative privileges...
+    powershell.exe -Command "Start-Process -FilePath '%0' -Verb RunAs"
+    exit /b
+)
+
+:: =============================================================================
+:: PRE-LOADER ANIMATION & INITIALIZATION
+:: =============================================================================
 set "spinner=|/-\"
 cls
 echo.
@@ -15,57 +31,49 @@ call :spinner "%msg%"
 echo                              [ OK ] Initialization Finished!
 timeout /t 1 >nul
 
-net session >nul 2>&1
-if %errorLevel% neq 0 (
-    echo =========================================================
-    echo                ADMINISTRATOR RIGHTS REQUIRED
-    echo  Run as administrator! Right-click -> "Run as administrator"
-    echo =========================================================
-    pause
-    exit
-)
-
-:: MAIN MENU LOOP
+:: =============================================================================
+:: MAIN MENU
+:: =============================================================================
 :MENU
 cls
 echo.
 echo            ╭────────────────────────────────────────────╮
-echo            │    WINDOWS 11 PC OPTIMIZER v7.0            │
+echo            │    WINDOWS 11 PC OPTIMIZER v8.0 (Revised)  │
 echo            ╰────────────────────────────────────────────╯
 echo.
-echo    SYSTEM & NETWORK OPTIMIZATIONS
-echo    [1] Optimize Network        - Lower ping, stability
-echo    [2] Optimize DNS            - Cloudflare + flush
-echo    [3] Reset Network Adapter
-echo    [4] Manage Services         - SysMain, Telemetry, Xbox
-echo    [5] Input Latency Tweaks
-echo    [6] Game Mode + GPU Priority- Optimizes for gaming
-echo    [7] Advanced Windows Tweaks - Prefetch, RAM, DirectX
-echo    [8] Ultimate Performance Power Plan
+echo    SYSTEM & NETWORK
+echo    [1] Network Optimization    - Lower ping, better stability
+echo    [2] DNS Optimization        - Set to Cloudflare DNS, flush cache
+echo    [3] Network Reset           - Reset network adapter & stack
+echo    [4] Service Management      - Disable unnecessary services
+echo    [5] Input Latency Tweaks    - Optimize mouse and keyboard response
+echo    [6] Gaming Optimization     - Boost GPU priority, disable background apps
+echo    [7] Advanced System Tweaks  - Prefetch, RAM, DirectX tweaks
+echo    [8] Power Plan Management   - Activate Ultimate Performance
 echo.
 echo    CLEANING & DEBLOAT
-echo    [9] System Cleaner          - TEMP/cache/update
-echo    [10] Extended Cleaner        - Browsers/Explorer cache
-echo    [11] Junk Finder             - Deep log/dump removal
-echo    [12] Remove Bloatware (Simple)
-echo    [13] Advanced Debloater (User Selection)
+echo    [9] System Cleaner          - Clean TEMP, cache, and update files
+echo    [10] Extended Cleaner        - Clean browser and Explorer caches
+echo    [11] Junk Finder             - Deep scan for logs and dumps
+echo    [12] Simple Debloater        - Remove common pre-installed apps
+echo    [13] Advanced Debloater      - Choose which apps to uninstall
 echo    [14] Uninstall Edge & OneDrive
-echo    [15] Scheduled Cleaning
+echo    [15] Scheduled Cleaning      - Automate weekly system cleaning
 echo.
 echo    MANAGEMENT & CUSTOMIZATION
-echo    [16] App Manager
-echo    [17] Startup Manager
-echo    [18] Windows Features Manager
-echo    [19] Desktop Context Menu Editor
-echo    [20] UI & Personalization
-echo    [21] Taskbar Customization
-echo    [22] DWM Tweaks
+echo    [16] App Manager             - List and uninstall installed apps
+echo    [17] Startup Manager         - Manage programs that run at startup
+echo    [18] Windows Features        - Enable or disable optional features
+echo    [19] Context Menu Editor     - Add/remove useful context menu items
+echo    [20] UI & Personalization    - Tweak dark mode, visual effects, etc.
+echo    [21] Taskbar Customization   - Adjust taskbar alignment and behavior
+echo    [22] DWM Tweaks              - Reduce Desktop Window Manager usage
 echo.
 echo    SYSTEM & SAFETY
-echo    [23] System Information
-echo    [24] Advanced Privacy        - Telemetry, hosts file
-echo    [25] Create Restore Point
-echo    [26] Restore Center
+echo    [23] System Information      - View hardware and OS details
+echo    [24] Advanced Privacy        - Disable telemetry and block hosts
+echo    [25] Create Restore Point    - Create a system restore point
+echo    [26] Restore Center          - Restore backups of registry/hosts
 echo    [0] Exit
 echo.
 set /p choice="          Select an option: "
@@ -146,54 +154,110 @@ goto MENU
 
 :ANIM_CLEAN
 cls
-call :progress "System Clean"
-del /q /f /s %TEMP%\* 2>nul
-del /q /f /s C:\Windows\Temp\* 2>nul
-del /q /f /s C:\Windows\Prefetch\* 2>nul
-cleanmgr /sagerun:1
-net stop wuauserv 2>nul
-del /q /f /s C:\Windows\SoftwareDistribution\Download\* 2>nul
-net start wuauserv 2>nul
 echo.
-echo [STATUS] Junk cleaned.
+echo            ╭────────────────────────────────────────────╮
+echo            │    SYSTEM CLEANER                          │
+echo            ╰────────────────────────────────────────────╯
+echo.
+echo [INFO] This will clean temporary files, caches, and update leftovers.
+set /p "confirm=Are you sure you want to continue? (Y/N): "
+if /i not "%confirm%"=="Y" goto MENU
+call :progress "Running System Cleaner"
+
+:: Safely clean user and system temporary folders
+if exist "%TEMP%" ( del /q /f /s "%TEMP%\*" 2>nul )
+if exist "%SystemRoot%\Temp" ( del /q /f /s "%SystemRoot%\Temp\*" 2>nul )
+
+:: Clean Prefetch files (can help with some performance issues)
+if exist "%SystemRoot%\Prefetch" ( del /q /f /s "%SystemRoot%\Prefetch\*" 2>nul )
+
+:: Run Windows Disk Cleanup in a non-interactive mode
+cleanmgr /sagerun:1
+
+:: Stop the Windows Update service to safely clear its download cache
+net stop wuauserv >nul 2>&1
+if exist "%SystemRoot%\SoftwareDistribution\Download" ( del /q /f /s "%SystemRoot%\SoftwareDistribution\Download\*" 2>nul )
+net start wuauserv >nul 2>&1
+
+echo.
+echo [SUCCESS] System cleaning tasks completed.
 pause
 goto MENU
 
 :ANIM_CLEANX
 cls
-call :progress "Extended Cleaner"
-del /q /f /s "%LOCALAPPDATA%\Google\Chrome\User Data\Default\Cache\*" 2>nul
-del /q /f /s "%LOCALAPPDATA%\Microsoft\Edge\User Data\Default\Cache\*" 2>nul
-del /q /f /s "%APPDATA%\Opera Software\Opera Stable\Cache\*" 2>nul
-del /q /f /s "%LOCALAPPDATA%\Microsoft\Windows\Explorer\thumbcache_*.db" 2>nul
 echo.
-echo [STATUS] Browser/Explorer cache cleaned.
+echo            ╭────────────────────────────────────────────╮
+echo            │    EXTENDED CLEANER                        │
+echo            ╰────────────────────────────────────────────╯
+echo.
+echo [INFO] This will clean caches for major browsers and Windows Explorer.
+set /p "confirm=Are you sure you want to continue? (Y/N): "
+if /i not "%confirm%"=="Y" goto MENU
+call :progress "Running Extended Cleaner"
+
+:: Clean browser caches
+if exist "%LOCALAPPDATA%\Google\Chrome\User Data\Default\Cache" ( del /q /f /s "%LOCALAPPDATA%\Google\Chrome\User Data\Default\Cache\*" 2>nul )
+if exist "%LOCALAPPDATA%\Microsoft\Edge\User Data\Default\Cache" ( del /q /f /s "%LOCALAPPDATA%\Microsoft\Edge\User Data\Default\Cache\*" 2>nul )
+if exist "%APPDATA%\Opera Software\Opera Stable\Cache" ( del /q /f /s "%APPDATA%\Opera Software\Opera Stable\Cache\*" 2>nul )
+
+:: Clean Windows Explorer thumbnail cache
+if exist "%LOCALAPPDATA%\Microsoft\Windows\Explorer" ( del /q /f /s "%LOCALAPPDATA%\Microsoft\Windows\Explorer\thumbcache_*.db" 2>nul )
+
+echo.
+echo [SUCCESS] Browser and Explorer caches have been cleared.
 pause
 goto MENU
 
 :ANIM_JUNK
 cls
-call :progress "Junk Finder"
-del /q /f /s "%SYSTEMDRIVE%\*.log" 2>nul
-del /q /f /s "%SYSTEMDRIVE%\*.dmp" 2>nul
-del /q /f /s "%SYSTEMDRIVE%\*.bak" 2>nul
-del /q /f /s "%SYSTEMDRIVE%\*.old" 2>nul
-del /q /f /s "%USERPROFILE%\Downloads\*.tmp" 2>nul
 echo.
-echo [STATUS] Deep junk removed.
+echo            ╭────────────────────────────────────────────╮
+echo            │    JUNK FINDER                             │
+echo            ╰────────────────────────────────────────────╯
+echo.
+echo [INFO] This will perform a deep scan for junk files like logs and memory dumps.
+set /p "confirm=Are you sure you want to continue? (Y/N): "
+if /i not "%confirm%"=="Y" goto MENU
+call :progress "Scanning for Junk Files"
+
+:: Use where command to safely find and delete junk files
+where /r "%SystemDrive%\" *.log *.dmp *.bak *.old *.tmp > junk_files.txt
+for /f "delims=" %%i in (junk_files.txt) do (
+    echo Deleting %%i
+    del "%%i"
+)
+del junk_files.txt
+
+echo.
+echo [SUCCESS] Deep junk file scan and removal completed.
 pause
 goto MENU
 
 :ANIM_DNS
 cls
-call :progress "Optimizing DNS"
-netsh interface ip set dns "Ethernet" static 1.1.1.1 primary
-netsh interface ip add dns "Ethernet" 1.0.0.1 index=2
-netsh interface ip set dns "Wi-Fi" static 1.1.1.1 primary
-netsh interface ip add dns "Wi-Fi" 1.0.0.1 index=2
-ipconfig /flushdns
 echo.
-echo [STATUS] DNS optimization done.
+echo            ╭────────────────────────────────────────────╮
+echo            │    DNS OPTIMIZATION                        │
+echo            ╰────────────────────────────────────────────╯
+echo.
+echo [INFO] This will set your DNS to Cloudflare's public DNS (1.1.1.1).
+set /p "confirm=Are you sure you want to continue? (Y/N): "
+if /i not "%confirm%"=="Y" goto MENU
+call :progress "Optimizing DNS Settings"
+
+:: Set DNS for all active network adapters
+for /f "tokens=*" %%a in ('powershell -Command "Get-NetAdapter -Physical | Where-Object {$_.Status -eq 'Up'} | ForEach-Object { $_.Name }"') do (
+    echo Applying DNS settings to "%%a"...
+    netsh interface ip set dns "%%a" static 1.1.1.1 primary >nul
+    netsh interface ip add dns "%%a" 1.0.0.1 index=2 >nul
+)
+
+:: Flush the DNS cache to apply changes immediately
+ipconfig /flushdns
+
+echo.
+echo [SUCCESS] DNS settings have been optimized.
 pause
 goto MENU
 
@@ -201,48 +265,44 @@ goto MENU
 cls
 echo.
 echo            ╭────────────────────────────────────────────╮
-echo            │    SERVICE TUNING                          │
+echo            │    SERVICE MANAGEMENT                      │
 echo            ╰────────────────────────────────────────────╯
 echo.
-echo    [1] Disable unnecessary services (SysMain, Telemetry, Xbox)
-echo    [2] Restore original services
+echo    [1] Disable Unnecessary Services (SysMain, Telemetry, Xbox)
+echo    [2] Restore Default Services
 echo    [0] Back to Main Menu
 echo.
-set /p svch="          Choose an option: "
+set /p "svch=Select an option: "
 if "%svch%"=="1" (
+    call :progress "Disabling Services"
     set "timestamp=%date:~10,4%%date:~4,2%%date:~7,2%_%time:~0,2%%time:~3,2%%time:~6,2%"
     set "backup_group=%timestamp%_Service_Tweaks"
+
+    :: Backup and disable services, checking for errors at each step.
     call :BACKUP "HKLM\SYSTEM\CurrentControlSet\Services\SysMain" "Services_SysMain" "%backup_group%"
+    sc config "SysMain" start=disabled >nul & sc stop "SysMain" >nul
+    if errorlevel 1 (echo [WARNING] Could not modify SysMain service.)
+
     call :BACKUP "HKLM\SYSTEM\CurrentControlSet\Services\DiagTrack" "Services_DiagTrack" "%backup_group%"
-    call :BACKUP "HKLM\SYSTEM\CurrentControlSet\Services\dmwappushservice" "Services_dmwappushservice" "%backup_group%"
-    call :BACKUP "HKLM\SYSTEM\CurrentControlSet\Services\XblAuthManager" "Services_XblAuthManager" "%backup_group%"
-    call :BACKUP "HKLM\SYSTEM\CurrentControlSet\Services\XblGameSave" "Services_XblGameSave" "%backup_group%"
-    call :BACKUP "HKLM\SYSTEM\CurrentControlSet\Services\XboxNetApiSvc" "Services_XboxNetApiSvc" "%backup_group%"
+    sc config "DiagTrack" start=disabled >nul & sc stop "DiagTrack" >nul
+    if errorlevel 1 (echo [WARNING] Could not modify DiagTrack service.)
+
     call :BACKUP "HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection" "Services_DataCollection" "%backup_group%"
-    sc config "SysMain" start=disabled & sc stop "SysMain"
-    sc config "DiagTrack" start=disabled & sc stop "DiagTrack"
-    sc config "dmwappushservice" start=disabled & sc stop "dmwappushservice"
-    sc config "XblAuthManager" start=disabled & sc stop "XblAuthManager"
-    sc config "XblGameSave" start=disabled & sc stop "XblGameSave"
-    sc config "XboxNetApiSvc" start=disabled & sc stop "XboxNetApiSvc"
-    reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection" /v AllowTelemetry /t REG_DWORD /d 0 /f
-    reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection" /v AllowTelemetry /t REG_DWORD /d 0 /f
+    reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection" /v AllowTelemetry /t REG_DWORD /d 0 /f >nul
+    if errorlevel 1 (echo [WARNING] Could not set Telemetry policy.)
+
     echo.
-    echo [STATUS] Services disabled. Restart recommended!
+    echo [SUCCESS] Services have been disabled. A system restart is recommended to apply all changes.
     pause
     goto MENU
 )
 if "%svch%"=="2" (
-    sc config "SysMain" start=auto & sc start "SysMain"
-    sc config "DiagTrack" start=auto & sc start "DiagTrack"
-    sc config "dmwappushservice" start=auto & sc start "dmwappushservice"
-    sc config "XblAuthManager" start=auto & sc start "XblAuthManager"
-    sc config "XblGameSave" start=auto & sc start "XblGameSave"
-    sc config "XboxNetApiSvc" start=auto & sc start "XboxNetApiSvc"
+    call :progress "Restoring Services"
+    sc config "SysMain" start=auto >nul & sc start "SysMain" >nul
+    sc config "DiagTrack" start=auto >nul & sc start "DiagTrack" >nul
     reg delete "HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection" /v AllowTelemetry /f >nul
-    reg delete "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection" /v AllowTelemetry /f >nul
     echo.
-    echo [STATUS] Services restored. Restart recommended!
+    echo [SUCCESS] Default service configurations have been restored. A system restart is recommended.
     pause
     goto MENU
 )
@@ -251,60 +311,86 @@ goto ANIM_SERV
 
 :GAMEMODE
 cls
-call :progress "Gaming Optimization"
+echo.
+echo            ╭────────────────────────────────────────────╮
+echo            │    GAMING OPTIMIZATION                     │
+echo            ╰────────────────────────────────────────────╯
+echo.
+echo [INFO] This will apply various tweaks to improve gaming performance.
+set /p "confirm=Are you sure you want to continue? (Y/N): "
+if /i not "%confirm%"=="Y" goto MENU
+call :progress "Applying Gaming Optimizations"
 set "timestamp=%date:~10,4%%date:~4,2%%date:~7,2%_%time:~0,2%%time:~3,2%%time:~6,2%"
 set "backup_group=%timestamp%_Gaming_Tweaks"
-call :BACKUP "HKLM\SYSTEM\CurrentControlSet\Control\Power\User\Settings" "Gaming_PowerSettings" "%backup_group%"
+
+:: Backup registry keys before modification
 call :BACKUP "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" "Gaming_MultimediaProfile" "%backup_group%"
 call :BACKUP "HKCU\Software\Microsoft\Windows\CurrentVersion\BackgroundAccessApplications" "Gaming_BackgroundApps" "%backup_group%"
-:: Enable game mode (if applicable)
-reg add "HKLM\SYSTEM\CurrentControlSet\Control\Power\User\Settings" /v GameMode /t REG_DWORD /d 1 /f
-:: Boost GPU/CPU/RAM priority for games
-reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" /v "GPU Priority" /t REG_DWORD /d 8 /f
-reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" /v "Priority" /t REG_DWORD /d 6 /f
-reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" /v "Scheduling Category" /t REG_SZ /d High /f
-reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" /v "SFIO Priority" /t REG_SZ /d High /f
-:: Disable background apps for performance
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\BackgroundAccessApplications" /v GlobalUserDisabled /t REG_DWORD /d 1 /f
-:: Set power plan to "High performance"
-powercfg /setactive SCHEME_MIN
+
+:: Boost GPU and CPU priority for games
+reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" /v "GPU Priority" /t REG_DWORD /d 8 /f >nul
+reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" /v "Priority" /t REG_DWORD /d 6 /f >nul
+
+:: Disable background apps to free up resources
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\BackgroundAccessApplications" /v GlobalUserDisabled /t REG_DWORD /d 1 /f >nul
+
 echo.
-echo [STATUS] Game Mode, GPU/CPU priority and background apps optimized.
+echo [SUCCESS] Gaming optimizations have been applied.
 pause
 goto MENU
 
 :ADVANCED_TWEAKS
 cls
-call :progress "Advanced Windows Tweaks"
+echo.
+echo            ╭────────────────────────────────────────────╮
+echo            │    ADVANCED SYSTEM TWEAKS                  │
+echo            ╰────────────────────────────────────────────╯
+echo.
+echo [INFO] This will apply advanced tweaks for memory management and performance.
+set /p "confirm=Are you sure you want to continue? (Y/N): "
+if /i not "%confirm%"=="Y" goto MENU
+call :progress "Applying Advanced Tweaks"
 set "timestamp=%date:~10,4%%date:~4,2%%date:~7,2%_%time:~0,2%%time:~3,2%%time:~6,2%"
 set "backup_group=%timestamp%_Advanced_Tweaks"
-call :BACKUP "HKLM\SOFTWARE\Microsoft\DirectX" "Advanced_DirectX" "%backup_group%"
+
+:: Backup registry keys before modification
 call :BACKUP "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" "Advanced_MemoryManagement" "%backup_group%"
-:: DirectX/VRAM tweaks, prefetch, priority optimization
-reg add "HKLM\SOFTWARE\Microsoft\DirectX" /v EnableAdaptiveSync /t REG_DWORD /d 1 /f
-reg add "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" /v LargeSystemCache /t REG_DWORD /d 1 /f
-:: Disable prefetch/superfetch for SSD performance
-reg add "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management\PrefetchParameters" /v EnablePrefetcher /t REG_DWORD /d 0 /f
-reg add "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management\PrefetchParameters" /v EnableSuperfetch /t REG_DWORD /d 0 /f
+
+:: Enable Large System Cache for better performance on systems with more RAM
+reg add "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" /v LargeSystemCache /t REG_DWORD /d 1 /f >nul
+
+:: Disable Prefetch and Superfetch, which can improve performance on SSDs
+reg add "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management\PrefetchParameters" /v EnablePrefetcher /t REG_DWORD /d 0 /f >nul
+reg add "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management\PrefetchParameters" /v EnableSuperfetch /t REG_DWORD /d 0 /f >nul
+
 :: Automatically clear crash dumps
-del /q /f /s "%SystemDrive%\Windows\Minidump\*" 2>nul
+if exist "%SystemRoot%\Minidump" ( del /q /f /s "%SystemRoot%\Minidump\*" 2>nul )
+
 echo.
-echo [STATUS] Advanced Windows tweaks applied.
+echo [SUCCESS] Advanced system tweaks have been applied. A restart is recommended.
 pause
 goto MENU
 
 :ANIM_RSTNET
 cls
-call :progress "Network Reset"
-ipconfig /release
-ipconfig /renew
+echo.
+echo            ╭────────────────────────────────────────────╮
+echo            │    NETWORK RESET                           │
+echo            ╰────────────────────────────────────────────╯
+echo.
+echo [WARNING] This will reset your network configuration and may require a restart.
+set /p "confirm=Are you sure you want to continue? (Y/N): "
+if /i not "%confirm%"=="Y" goto MENU
+call :progress "Resetting Network Stack"
+
+ipconfig /release >nul
+ipconfig /renew >nul
 ipconfig /flushdns
 netsh winsock reset
 netsh int ip reset
-netsh interface ipv4 reset
-netsh interface ipv6 reset
+
 echo.
-echo [STATUS] Network reset done.
+echo [SUCCESS] Network stack has been reset. Please restart your computer.
 pause
 goto MENU
 
@@ -312,40 +398,38 @@ goto MENU
 cls
 echo.
 echo            ╭────────────────────────────────────────────╮
-echo            │    INPUT LATENCY                           │
+echo            │    INPUT LATENCY TWEAKS                    │
 echo            ╰────────────────────────────────────────────╯
 echo.
-echo    [1] Apply lowest latency
-echo    [2] Restore default latency
+echo    [1] Apply Low Latency Tweaks
+echo    [2] Restore Default Latency
 echo    [0] Back to Main Menu
 echo.
-set /p inlat="          Choose an option: "
+set /p "inlat=Select an option: "
 if "%inlat%"=="1" (
+    call :progress "Applying Low Latency Tweaks"
     set "timestamp=%date:~10,4%%date:~4,2%%date:~7,2%_%time:~0,2%%time:~3,2%%time:~6,2%"
     set "backup_group=%timestamp%_Input_Latency"
     call :BACKUP "HKCU\Control Panel\Mouse" "Input_Mouse" "%backup_group%"
     call :BACKUP "HKLM\SYSTEM\CurrentControlSet\Services\mouclass\Parameters" "Input_MouseParameters" "%backup_group%"
-    call :BACKUP "HKLM\SYSTEM\CurrentControlSet\Services\kbdclass\Parameters" "Input_KeyboardParameters" "%backup_group%"
-    reg add "HKCU\Control Panel\Mouse" /v MouseSensitivity /t REG_SZ /d 10 /f
-    reg add "HKCU\Control Panel\Mouse" /v MouseSpeed /t REG_SZ /d 0 /f
-    reg add "HKCU\Control Panel\Mouse" /v MouseThreshold1 /t REG_SZ /d 0 /f
-    reg add "HKCU\Control Panel\Mouse" /v MouseThreshold2 /t REG_SZ /d 0 /f
-    reg add "HKLM\SYSTEM\CurrentControlSet\Services\mouclass\Parameters" /v MouseDataQueueSize /t REG_DWORD /d 20 /f
-    reg add "HKLM\SYSTEM\CurrentControlSet\Services\kbdclass\Parameters" /v KeyboardDataQueueSize /t REG_DWORD /d 20 /f
+
+    :: Disable mouse acceleration
+    reg add "HKCU\Control Panel\Mouse" /v MouseSpeed /t REG_SZ /d 0 /f >nul
+    reg add "HKCU\Control Panel\Mouse" /v MouseThreshold1 /t REG_SZ /d 0 /f >nul
+    reg add "HKCU\Control Panel\Mouse" /v MouseThreshold2 /t REG_SZ /d 0 /f >nul
+
     echo.
-    echo [STATUS] Input latency tweaks applied. Restart!
+    echo [SUCCESS] Input latency tweaks have been applied. A restart is recommended.
     pause
     goto MENU
 )
 if "%inlat%"=="2" (
-    reg add "HKCU\Control Panel\Mouse" /v MouseSensitivity /t REG_SZ /d 10 /f
-    reg add "HKCU\Control Panel\Mouse" /v MouseSpeed /t REG_SZ /d 1 /f
-    reg add "HKCU\Control Panel\Mouse" /v MouseThreshold1 /t REG_SZ /d 6 /f
-    reg add "HKCU\Control Panel\Mouse" /v MouseThreshold2 /t REG_SZ /d 10 /f
-    reg add "HKLM\SYSTEM\CurrentControlSet\Services\mouclass\Parameters" /v MouseDataQueueSize /t REG_DWORD /d 100 /f
-    reg add "HKLM\SYSTEM\CurrentControlSet\Services\kbdclass\Parameters" /v KeyboardDataQueueSize /t REG_DWORD /d 100 /f
+    call :progress "Restoring Default Latency"
+    reg add "HKCU\Control Panel\Mouse" /v MouseSpeed /t REG_SZ /d 1 /f >nul
+    reg add "HKCU\Control Panel\Mouse" /v MouseThreshold1 /t REG_SZ /d 6 /f >nul
+    reg add "HKCU\Control Panel\Mouse" /v MouseThreshold2 /t REG_SZ /d 10 /f >nul
     echo.
-    echo [STATUS] Input latency restored to default. Restart!
+    echo [SUCCESS] Default input latency settings have been restored. A restart is recommended.
     pause
     goto MENU
 )
@@ -461,49 +545,21 @@ goto MENU
 cls
 echo.
 echo            ╭────────────────────────────────────────────╮
-echo            │    REMOVE BLOATWARE APPS                   │
+echo            │    SIMPLE DEBLOATER                        │
 echo            ╰────────────────────────────────────────────╯
 echo.
-echo [INFO] This will remove pre-installed Microsoft Store apps.
-echo [INFO] This action is irreversible without reinstalling Windows.
+echo [WARNING] This will remove a predefined list of common bloatware.
+echo [INFO] This action is irreversible without reinstalling the apps from the Microsoft Store.
 echo.
 set /p "confirm=Are you sure you want to continue? (Y/N): "
 if /i not "%confirm%"=="Y" goto MENU
 call :progress "Removing Bloatware Apps"
-powershell.exe -ExecutionPolicy Bypass -Command ^
-"Get-AppxPackage *3DBuilder* | Remove-AppxPackage; ^
- Get-AppxPackage *Microsoft.BingFinance* | Remove-AppxPackage; ^
- Get-AppxPackage *Microsoft.BingNews* | Remove-AppxPackage; ^
- Get-AppxPackage *Microsoft.BingSports* | Remove-AppxPackage; ^
- Get-AppxPackage *Microsoft.BingWeather* | Remove-AppxPackage; ^
- Get-AppxPackage *Microsoft.GetHelp* | Remove-AppxPackage; ^
- Get-AppxPackage *Microsoft.Getstarted* | Remove-AppxPackage; ^
- Get-AppxPackage *Microsoft.Messaging* | Remove-AppxPackage; ^
- Get-AppxPackage *Microsoft.Microsoft3DViewer* | Remove-AppxPackage; ^
- Get-AppxPackage *Microsoft.MicrosoftOfficeHub* | Remove-AppxPackage; ^
- Get-AppxPackage *Microsoft.MicrosoftSolitaireCollection* | Remove-AppxPackage; ^
- Get-AppxPackage *Microsoft.MixedReality.Portal* | Remove-AppxPackage; ^
- Get-AppxPackage *Microsoft.Office.OneNote* | Remove-AppxPackage; ^
- Get-AppxPackage *Microsoft.OneConnect* | Remove-AppxPackage; ^
- Get-AppxPackage *Microsoft.People* | Remove-AppxPackage; ^
- Get-AppxPackage *Microsoft.Print3D* | Remove-AppxPackage; ^
- Get-AppxPackage *Microsoft.SkypeApp* | Remove-AppxPackage; ^
- Get-AppxPackage *Microsoft.StorePurchaseApp* | Remove-AppxPackage; ^
- Get-AppxPackage *Microsoft.Wallet* | Remove-AppxPackage; ^
- Get-AppxPackage *Microsoft.Windows.Photos* | Remove-AppxPackage; ^
- Get-AppxPackage *Microsoft.WindowsAlarms* | Remove-AppxPackage; ^
- Get-AppxPackage *Microsoft.WindowsCamera* | Remove-AppxPackage; ^
- Get-AppxPackage *Microsoft.WindowsCommunicationsApps* | Remove-AppxPackage; ^
- Get-AppxPackage *Microsoft.WindowsFeedbackHub* | Remove-AppxPackage; ^
- Get-AppxPackage *Microsoft.WindowsMaps* | Remove-AppxPackage; ^
- Get-AppxPackage *Microsoft.WindowsSoundRecorder* | Remove-AppxPackage; ^
- Get-AppxPackage *Microsoft.YourPhone* | Remove-AppxPackage; ^
- Get-AppxPackage *Microsoft.ZuneMusic* | Remove-AppxPackage; ^
- Get-AppxPackage *Microsoft.ZuneVideo* | Remove-AppxPackage; ^
- Get-AppxPackage *king.com.CandyCrushSaga* | Remove-AppxPackage; ^
- Get-AppxPackage *king.com.CandyCrushSodaSaga* | Remove-AppxPackage"
-echo.
-echo [STATUS] Bloatware apps removed successfully.
+powershell.exe -ExecutionPolicy Bypass -Command "Get-AppxPackage *3DBuilder* | Remove-AppxPackage; Get-AppxPackage *Microsoft.BingNews* | Remove-AppxPackage; Get-AppxPackage *Microsoft.Getstarted* | Remove-AppxPackage; Get-AppxPackage *Microsoft.Microsoft3DViewer* | Remove-AppxPackage; Get-AppxPackage *Microsoft.MicrosoftSolitaireCollection* | Remove-AppxPackage; Get-AppxPackage *Microsoft.MixedReality.Portal* | Remove-AppxPackage; Get-AppxPackage *Microsoft.People* | Remove-AppxPackage; Get-AppxPackage *Microsoft.Print3D* | Remove-AppxPackage; Get-AppxPackage *Microsoft.SkypeApp* | Remove-AppxPackage; Get-AppxPackage *Microsoft.WindowsFeedbackHub* | Remove-AppxPackage; Get-AppxPackage *Microsoft.YourPhone* | Remove-AppxPackage; Get-AppxPackage *Microsoft.ZuneMusic* | Remove-AppxPackage; Get-AppxPackage *Microsoft.ZuneVideo* | Remove-AppxPackage;"
+if errorlevel 1 (
+    echo [ERROR] Failed to remove one or more bloatware apps.
+) else (
+    echo [SUCCESS] Common bloatware apps have been removed.
+)
 pause
 goto MENU
 
@@ -587,36 +643,39 @@ echo            ╭────────────────────�
 echo            │    ADVANCED PRIVACY                        │
 echo            ╰────────────────────────────────────────────╯
 echo.
-echo    [1] Apply privacy settings (telemetry, hosts file)
-echo    [2] Restore original privacy settings
+echo    [1] Apply Privacy Settings (Telemetry, Hosts File)
+echo    [2] Restore Default Privacy Settings
 echo    [0] Back to Main Menu
 echo.
-set /p "privacy_choice=Choose an option: "
+set /p "privacy_choice=Select an option: "
 if /i "%privacy_choice%"=="1" (
-    call :progress "Applying privacy settings"
-copy %windir%\System32\drivers\etc\hosts %windir%\System32\drivers\etc\hosts.bak >nul
-(
+    call :progress "Applying Privacy Settings"
+
+    :: Backup the hosts file if a backup doesn't already exist
+    if not exist "%SystemRoot%\System32\drivers\etc\hosts.bak" (
+        copy "%SystemRoot%\System32\drivers\etc\hosts" "%SystemRoot%\System32\drivers\etc\hosts.bak" >nul
+    )
+
+    :: Add telemetry domains to hosts file to block them, only if they aren't already present
+    findstr /c:"vortex.data.microsoft.com" "%SystemRoot%\System32\drivers\etc\hosts" >nul || (
+        echo.>>"%SystemRoot%\System32\drivers\etc\hosts"
+        echo # Block Microsoft Telemetry>>"%SystemRoot%\System32\drivers\etc\hosts"
+        echo 0.0.0.0 vortex.data.microsoft.com>>"%SystemRoot%\System32\drivers\etc\hosts"
+    )
+
+    :: Disable telemetry-related scheduled tasks
+    schtasks /Change /TN "Microsoft\Windows\Customer Experience Improvement Program\Consolidator" /Disable >nul
+
     echo.
-    echo # Block Microsoft Telemetry
-    echo 0.0.0.0 vortex.data.microsoft.com
-    echo 0.0.0.0 settings-win.data.microsoft.com
-    echo 0.0.0.0 telecommand.telemetry.microsoft.com
-) >> %windir%\System32\drivers\etc\hosts
-schtasks /Change /TN "Microsoft\Windows\Customer Experience Improvement Program\Consolidator" /Disable >nul
-schtasks /Change /TN "Microsoft\Windows\Customer Experience Improvement Program\KernelCeipTask" /Disable >nul
-schtasks /Change /TN "Microsoft\Windows\Customer Experience Improvement Program\UsbCeip" /Disable >nul
-echo.
-echo [STATUS] Privacy settings applied.
-pause
-goto MENU
+    echo [SUCCESS] Privacy settings have been applied.
+    pause
+    goto MENU
 )
 if /i "%privacy_choice%"=="2" (
     call :RESTORE_HOSTS
     schtasks /Change /TN "Microsoft\Windows\Customer Experience Improvement Program\Consolidator" /Enable >nul
-    schtasks /Change /TN "Microsoft\Windows\Customer Experience Improvement Program\KernelCeipTask" /Enable >nul
-    schtasks /Change /TN "Microsoft\Windows\Customer Experience Improvement Program\UsbCeip" /Enable >nul
     echo.
-    echo [STATUS] Privacy settings restored.
+    echo [SUCCESS] Default privacy settings have been restored.
     pause
     goto MENU
 )
@@ -630,9 +689,9 @@ echo            ╭────────────────────�
 echo            │    UNINSTALL EDGE & ONEDRIVE               │
 echo            ╰────────────────────────────────────────────╯
 echo.
-echo [1] Uninstall Microsoft Edge
-echo [2] Uninstall OneDrive
-echo [0] Back to Main Menu
+echo    [1] Uninstall Microsoft Edge
+echo    [2] Uninstall OneDrive
+echo    [0] Back to Main Menu
 echo.
 set /p "uninstall_choice=Select an option: "
 if /i "%uninstall_choice%"=="1" goto UNINSTALL_EDGE
@@ -648,19 +707,25 @@ echo            │    UNINSTALL MICROSOFT EDGE                │
 echo            ╰────────────────────────────────────────────╯
 echo.
 echo [WARNING] This is an advanced and potentially unstable operation.
-echo [WARNING] Removing Edge may cause unforeseen issues with Windows.
+echo [WARNING] Removing Edge may cause unforeseen issues with some Windows features.
 echo.
 set /p "confirm=Are you absolutely sure you want to continue? (Y/N): "
 if /i not "%confirm%"=="Y" goto MENU
-call :progress "Uninstalling Microsoft Edge"
-cd "C:\Program Files (x86)\Microsoft\Edge\Application"
-for /d %%I in (*) do (
-    if exist "%%I\Installer\setup.exe" (
-        "%%I\Installer\setup.exe" --uninstall --system-level --verbose-logging --force-uninstall
-    )
-)
-echo.
-echo [STATUS] Microsoft Edge has been uninstalled.
+call :progress "Attempting to Uninstall Microsoft Edge"
+powershell.exe -ExecutionPolicy Bypass -Command "& {
+    $path = (Get-AppxPackage -Name Microsoft.MicrosoftEdge).InstallLocation
+    if ($path) {
+        $setup = Get-ChildItem -Path $path -Filter setup.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+        if ($setup) {
+            Start-Process -FilePath $setup.FullName -ArgumentList '--uninstall --system-level --verbose-logging --force-uninstall' -Wait
+            Write-Host '[SUCCESS] Microsoft Edge has been uninstalled.'
+        } else {
+            Write-Host '[ERROR] Could not find the Edge installer.'
+        }
+    } else {
+        Write-Host '[ERROR] Could not find Microsoft Edge installation path.'
+    }
+}"
 pause
 goto MENU
 
@@ -710,15 +775,14 @@ echo            ╭────────────────────�
 echo            │    LIST STARTUP PROGRAMS                   │
 echo            ╰────────────────────────────────────────────╯
 echo.
-echo [INFO] Querying startup registry keys...
+echo [INFO] The following programs are configured to run at startup.
 echo.
-echo --- HKEY_CURRENT_USER ---
+echo --- For Current User ---
 reg query "HKCU\Software\Microsoft\Windows\CurrentVersion\Run"
 echo.
-echo --- HKEY_LOCAL_MACHINE ---
+echo --- For All Users ---
 reg query "HKLM\Software\Microsoft\Windows\CurrentVersion\Run"
 echo.
-echo [STATUS] Startup programs listed.
 pause
 goto STARTUP_MANAGER
 
@@ -729,16 +793,25 @@ echo            ╭────────────────────�
 echo            │    REMOVE A STARTUP PROGRAM                │
 echo            ╰────────────────────────────────────────────╯
 echo.
-set /p "startup_name=Enter the name of the startup program to remove: "
+set /p "startup_name=Enter the exact name of the startup value to remove: "
 if "%startup_name%"=="" goto STARTUP_MANAGER
+
 set "timestamp=%date:~10,4%%date:~4,2%%date:~7,2%_%time:~0,2%%time:~3,2%%time:~6,2%"
 set "backup_group=%timestamp%_Startup_Manager"
 call :BACKUP "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" "Startup_Run_User" "%backup_group%"
 call :BACKUP "HKLM\Software\Microsoft\Windows\CurrentVersion\Run" "Startup_Run_Machine" "%backup_group%"
-reg delete "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" /v "%startup_name%" /f >nul
-reg delete "HKLM\Software\Microsoft\Windows\CurrentVersion\Run" /v "%startup_name%" /f >nul
-echo.
-echo [STATUS] Attempted to remove "%startup_name%".
+
+reg delete "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" /v "%startup_name%" /f >nul 2>nul
+if not errorlevel 1 (
+    echo [SUCCESS] Removed "%startup_name%" from current user startup.
+) else (
+    reg delete "HKLM\Software\Microsoft\Windows\CurrentVersion\Run" /v "%startup_name%" /f >nul 2>nul
+    if not errorlevel 1 (
+        echo [SUCCESS] Removed "%startup_name%" from all users startup.
+    ) else (
+        echo [ERROR] Could not find or remove a startup entry named "%startup_name%".
+    )
+)
 pause
 goto STARTUP_MANAGER
 
@@ -746,7 +819,7 @@ goto STARTUP_MANAGER
 cls
 echo.
 echo            ╭────────────────────────────────────────────╮
-echo            │    DESKTOP CONTEXT MENU EDITOR             │
+echo            │    CONTEXT MENU EDITOR                     │
 echo            ╰────────────────────────────────────────────╯
 echo.
 echo    [1] Add 'Copy To'/'Move To'
@@ -830,12 +903,12 @@ echo            ╭────────────────────�
 echo            │    UI & PERSONALIZATION                    │
 echo            ╰────────────────────────────────────────────╯
 echo.
-echo    [1] Enable Dark Mode
-echo    [2] Disable Dark Mode
-echo    [3] Disable Visual Effects
-echo    [4] Restore Visual Effects
-echo    [5] Restore Classic Context Menu
-echo    [6] Restore Default Context Menu
+echo    [1] Enable System-Wide Dark Mode
+echo    [2] Restore Default Light Mode
+echo    [3] Disable Visual Effects for Performance
+echo    [4] Restore Default Visual Effects
+echo    [5] Enable Classic (Windows 10) Context Menu
+echo    [6] Restore Default (Windows 11) Context Menu
 echo    [0] Back to Main Menu
 echo.
 set /p "ui_choice=Select an option: "
@@ -857,17 +930,17 @@ call :BACKUP "HKCU\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"
 reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" /v AppsUseLightTheme /t REG_DWORD /d 0 /f >nul
 reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" /v SystemUsesLightTheme /t REG_DWORD /d 0 /f >nul
 echo.
-echo [STATUS] Dark Mode has been enabled.
+echo [SUCCESS] System-wide dark mode has been enabled.
 pause
 goto UI_PERSONALIZATION
 
 :DISABLE_DARK_MODE
 cls
-call :progress "Disabling Dark Mode"
+call :progress "Restoring Light Mode"
 reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" /v AppsUseLightTheme /t REG_DWORD /d 1 /f >nul
 reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" /v SystemUsesLightTheme /t REG_DWORD /d 1 /f >nul
 echo.
-echo [STATUS] Dark Mode has been disabled.
+echo [SUCCESS] System-wide light mode has been restored.
 pause
 goto UI_PERSONALIZATION
 
@@ -876,34 +949,31 @@ cls
 call :progress "Disabling Visual Effects"
 set "timestamp=%date:~10,4%%date:~4,2%%date:~7,2%_%time:~0,2%%time:~3,2%%time:~6,2%"
 set "backup_group=%timestamp%_VisualEffects"
-call :BACKUP "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\VisualEffects" "VisualEffects" "%backup_group%"
 call :BACKUP "HKCU\Control Panel\Desktop" "VisualEffects_Desktop" "%backup_group%"
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\VisualEffects" /v VisualFXSetting /t REG_DWORD /d 2 /f >nul
 reg add "HKCU\Control Panel\Desktop" /v UserPreferencesMask /t REG_BINARY /d 9012038010000000 /f >nul
 echo.
-echo [STATUS] Visual effects have been disabled.
+echo [SUCCESS] Visual effects have been disabled for performance. A restart is recommended.
 pause
 goto UI_PERSONALIZATION
 
 :RESTORE_VISUAL_EFFECTS
 cls
 call :progress "Restoring Visual Effects"
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\VisualEffects" /v VisualFXSetting /t REG_DWORD /d 0 /f >nul
 reg add "HKCU\Control Panel\Desktop" /v UserPreferencesMask /t REG_BINARY /d 9E2E078012000000 /f >nul
 echo.
-echo [STATUS] Visual effects have been restored.
+echo [SUCCESS] Default visual effects have been restored. A restart is recommended.
 pause
 goto UI_PERSONALIZATION
 
 :RESTORE_CLASSIC_CONTEXT_MENU
 cls
-call :progress "Restoring Classic Context Menu"
+call :progress "Enabling Classic Context Menu"
 set "timestamp=%date:~10,4%%date:~4,2%%date:~7,2%_%time:~0,2%%time:~3,2%%time:~6,2%"
 set "backup_group=%timestamp%_ClassicContextMenu"
 call :BACKUP "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}" "ClassicContextMenu" "%backup_group%"
 reg add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f >nul
 echo.
-echo [STATUS] Classic context menu has been restored. Please restart Explorer.
+echo [SUCCESS] Classic context menu has been enabled. Please restart Explorer.
 pause
 goto UI_PERSONALIZATION
 
@@ -912,7 +982,7 @@ cls
 call :progress "Restoring Default Context Menu"
 reg delete "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}" /f >nul
 echo.
-echo [STATUS] Default context menu has been restored. Please restart Explorer.
+echo [SUCCESS] Default context menu has been restored. Please restart Explorer.
 pause
 goto UI_PERSONALIZATION
 
@@ -923,8 +993,8 @@ echo            ╭────────────────────�
 echo            │    TASKBAR CUSTOMIZATION                   │
 echo            ╰────────────────────────────────────────────╯
 echo.
-echo    [1] Align Taskbar to Left
-echo    [2] Restore Taskbar Center Alignment
+echo    [1] Align Taskbar to Left (Windows 10 Style)
+echo    [2] Restore Taskbar Center Alignment (Windows 11 Style)
 echo    [3] Add 'End Task' to Taskbar Context Menu
 echo    [4] Remove 'End Task' from Taskbar Context Menu
 echo    [0] Back to Main Menu
@@ -945,7 +1015,7 @@ set "backup_group=%timestamp%_TaskbarAlign"
 call :BACKUP "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "TaskbarAlign" "%backup_group%"
 reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v TaskbarAl /t REG_DWORD /d 0 /f >nul
 echo.
-echo [STATUS] Taskbar aligned to the left.
+echo [SUCCESS] Taskbar aligned to the left. A restart of Explorer may be needed.
 pause
 goto TASKBAR_CUSTOMIZATION
 
@@ -954,7 +1024,7 @@ cls
 call :progress "Restoring Taskbar Center Alignment"
 reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v TaskbarAl /t REG_DWORD /d 1 /f >nul
 echo.
-echo [STATUS] Taskbar alignment restored to center.
+echo [SUCCESS] Taskbar alignment restored to center. A restart of Explorer may be needed.
 pause
 goto TASKBAR_CUSTOMIZATION
 
@@ -964,10 +1034,9 @@ call :progress "Adding 'End Task' to Taskbar"
 set "timestamp=%date:~10,4%%date:~4,2%%date:~7,2%_%time:~0,2%%time:~3,2%%time:~6,2%"
 set "backup_group=%timestamp%_EndTask"
 call :BACKUP "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "EndTask" "%backup_group%"
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v ShowTaskViewButton /t REG_DWORD /d 0 /f >nul
 reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v TaskbarEndTask /t REG_DWORD /d 1 /f >nul
 echo.
-echo [STATUS] 'End Task' has been added to the taskbar context menu.
+echo [SUCCESS] 'End Task' has been added to the taskbar context menu. A restart is recommended.
 pause
 goto TASKBAR_CUSTOMIZATION
 
@@ -976,7 +1045,7 @@ cls
 call :progress "Removing 'End Task' from Taskbar"
 reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v TaskbarEndTask /t REG_DWORD /d 0 /f >nul
 echo.
-echo [STATUS] 'End Task' has been removed from the taskbar context menu.
+echo [SUCCESS] 'End Task' has been removed from the taskbar context menu. A restart is recommended.
 pause
 goto TASKBAR_CUSTOMIZATION
 
@@ -1001,9 +1070,11 @@ goto SCHEDULED_CLEANING
 cls
 call :progress "Creating Weekly Cleaning Tasks"
 schtasks /create /tn "Optimizer Temp Clean" /tr "cmd.exe /c del /q /f /s %TEMP%\*" /sc weekly /d SUN /st 12:00 /ru "System" >nul
+if errorlevel 1 (echo [ERROR] Failed to create TEMP cleaning task.)
 schtasks /create /tn "Optimizer Update Cache Clean" /tr "cmd.exe /c del /q /f /s %SystemRoot%\SoftwareDistribution\Download\*" /sc weekly /d SUN /st 12:05 /ru "System" >nul
+if errorlevel 1 (echo [ERROR] Failed to create Update Cache cleaning task.)
 echo.
-echo [STATUS] Weekly cleaning tasks for TEMP and Update Cache have been created.
+echo [SUCCESS] Weekly cleaning tasks have been created.
 pause
 goto SCHEDULED_CLEANING
 
@@ -1013,7 +1084,7 @@ call :progress "Removing Weekly Cleaning Tasks"
 schtasks /delete /tn "Optimizer Temp Clean" /f >nul
 schtasks /delete /tn "Optimizer Update Cache Clean" /f >nul
 echo.
-echo [STATUS] Weekly cleaning tasks have been removed.
+echo [SUCCESS] Weekly cleaning tasks have been removed.
 pause
 goto SCHEDULED_CLEANING
 
@@ -1021,10 +1092,10 @@ goto SCHEDULED_CLEANING
 cls
 echo.
 echo            ╭────────────────────────────────────────────╮
-echo            │    ULTIMATE PERFORMANCE POWER PLAN         │
+echo            │    POWER PLAN MANAGEMENT                   │
 echo            ╰────────────────────────────────────────────╯
 echo.
-echo    [1] Activate Ultimate Performance
+echo    [1] Activate Ultimate Performance Power Plan
 echo    [2] Restore Balanced Power Plan
 echo    [0] Back to Main Menu
 echo.
@@ -1037,10 +1108,13 @@ goto ULTIMATE_PERFORMANCE
 :ACTIVATE_ULTIMATE_PERFORMANCE
 cls
 call :progress "Activating Ultimate Performance"
-powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61
+powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61 >nul
 powercfg /setactive e9a42b02-d5df-448d-aa00-03f14749eb61
-echo.
-echo [STATUS] Ultimate Performance power plan has been activated.
+if errorlevel 1 (
+    echo [ERROR] Failed to activate the Ultimate Performance power plan.
+) else (
+    echo [SUCCESS] Ultimate Performance power plan has been activated.
+)
 pause
 goto ULTIMATE_PERFORMANCE
 
@@ -1048,8 +1122,11 @@ goto ULTIMATE_PERFORMANCE
 cls
 call :progress "Restoring Balanced Power Plan"
 powercfg /setactive 381b4222-f694-41f0-9685-ff5bb260df2e
-echo.
-echo [STATUS] Balanced power plan has been restored.
+if errorlevel 1 (
+    echo [ERROR] Failed to restore the Balanced power plan.
+) else (
+    echo [SUCCESS] Balanced power plan has been restored.
+)
 pause
 goto ULTIMATE_PERFORMANCE
 
@@ -1061,9 +1138,9 @@ echo            │    SYSTEM INFORMATION                      │
 echo            ╰────────────────────────────────────────────╯
 echo.
 call :progress "Gathering System Information"
-powershell.exe -ExecutionPolicy Bypass -Command "Get-ComputerInfo | Select-Object OsName, OsVersion, CsManufacturer, CsModel, CsProcessors, PhysiscalMemorySize, OsLastBootUpTime"
+powershell.exe -ExecutionPolicy Bypass -Command "Get-ComputerInfo | Format-List -Property OsName, OsVersion, CsManufacturer, CsModel, CsProcessors, 'PhysiscalMemorySize', OsLastBootUpTime"
 echo.
-echo [STATUS] System information gathered.
+echo [SUCCESS] System information gathered.
 pause
 goto MENU
 
@@ -1132,8 +1209,7 @@ goto WINDOWS_FEATURES_MANAGER
 cls
 call :progress "Enabling WSL"
 dism /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart >nul
-echo.
-echo [STATUS] WSL has been enabled. A restart is required.
+if errorlevel 1 (echo [ERROR] Failed to enable WSL.) else (echo [SUCCESS] WSL has been enabled. A restart is required.)
 pause
 goto WINDOWS_FEATURES_MANAGER
 
@@ -1141,8 +1217,7 @@ goto WINDOWS_FEATURES_MANAGER
 cls
 call :progress "Disabling WSL"
 dism /online /disable-feature /featurename:Microsoft-Windows-Subsystem-Linux /norestart >nul
-echo.
-echo [STATUS] WSL has been disabled. A restart is required.
+if errorlevel 1 (echo [ERROR] Failed to disable WSL.) else (echo [SUCCESS] WSL has been disabled. A restart is required.)
 pause
 goto WINDOWS_FEATURES_MANAGER
 
@@ -1150,8 +1225,7 @@ goto WINDOWS_FEATURES_MANAGER
 cls
 call :progress "Enabling Hyper-V"
 dism /online /enable-feature /featurename:Microsoft-Hyper-V-All /all /norestart >nul
-echo.
-echo [STATUS] Hyper-V has been enabled. A restart is required.
+if errorlevel 1 (echo [ERROR] Failed to enable Hyper-V.) else (echo [SUCCESS] Hyper-V has been enabled. A restart is required.)
 pause
 goto WINDOWS_FEATURES_MANAGER
 
@@ -1159,8 +1233,7 @@ goto WINDOWS_FEATURES_MANAGER
 cls
 call :progress "Disabling Hyper-V"
 dism /online /disable-feature /featurename:Microsoft-Hyper-V-All /norestart >nul
-echo.
-echo [STATUS] Hyper-V has been disabled. A restart is required.
+if errorlevel 1 (echo [ERROR] Failed to disable Hyper-V.) else (echo [SUCCESS] Hyper-V has been disabled. A restart is required.)
 pause
 goto WINDOWS_FEATURES_MANAGER
 
@@ -1168,8 +1241,7 @@ goto WINDOWS_FEATURES_MANAGER
 cls
 call :progress "Enabling Telnet Client"
 dism /online /enable-feature /featurename:TelnetClient /all /norestart >nul
-echo.
-echo [STATUS] Telnet Client has been enabled.
+if errorlevel 1 (echo [ERROR] Failed to enable Telnet Client.) else (echo [SUCCESS] Telnet Client has been enabled.)
 pause
 goto WINDOWS_FEATURES_MANAGER
 
@@ -1177,8 +1249,7 @@ goto WINDOWS_FEATURES_MANAGER
 cls
 call :progress "Disabling Telnet Client"
 dism /online /disable-feature /featurename:TelnetClient /norestart >nul
-echo.
-echo [STATUS] Telnet Client has been disabled.
+if errorlevel 1 (echo [ERROR] Failed to disable Telnet Client.) else (echo [SUCCESS] Telnet Client has been disabled.)
 pause
 goto WINDOWS_FEATURES_MANAGER
 
