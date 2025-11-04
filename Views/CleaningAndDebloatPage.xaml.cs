@@ -125,7 +125,7 @@ namespace OptimizerGUI.Views
 
         private void AdvancedDebloater_Click(object sender, RoutedEventArgs e)
         {
-            Frame.Navigate(typeof(AdvancedDebloaterPage));
+            this.Frame.Navigate(typeof(AdvancedDebloaterPage));
         }
 
         private async void UninstallEdgeAndOneDrive_Click(object sender, RoutedEventArgs e)
