@@ -30,7 +30,7 @@ if %errorLevel% neq 0 (
 cls
 echo.
 echo            ╭────────────────────────────────────────────╮
-echo            │    WINDOWS 11 PC OPTIMIZER v4.0            │
+echo            │    WINDOWS 11 PC OPTIMIZER v5.0            │
 echo            ╰────────────────────────────────────────────╯
 echo.
 echo    [1] Optimize Network        - Lower ping, stability
@@ -44,11 +44,14 @@ echo    [8] Advanced Windows Tweaks - Prefetch, RAM, DirectX
 echo    [9] Reset Network Adapter
 echo    [10] Input Latency Tweaks
 echo    [11] App Manager
-echo    [12] Advanced Privacy        - Telemetry, hosts file
-echo    [13] Remove Bloatware
-echo    [14] Uninstall Edge & OneDrive
-echo    [15] Create Restore Point
-echo    [16] Restore Center
+echo    [12] Startup Manager
+echo    [13] Advanced Privacy        - Telemetry, hosts file
+echo    [14] Remove Bloatware
+echo    [15] Uninstall Edge & OneDrive
+echo    [16] Create Restore Point
+echo    [17] Restore Center
+echo    [18] Desktop Context Menu Editor
+echo    [19] DWM Tweaks
 echo    [0] Exit
 echo.
 set /p choice="          Select an option: "
@@ -63,11 +66,14 @@ if /i "%choice%"=="8" goto ADVANCED_TWEAKS
 if /i "%choice%"=="9" goto ANIM_RSTNET
 if /i "%choice%"=="10" goto ANIM_INPUT
 if /i "%choice%"=="11" goto APP_MANAGER
-if /i "%choice%"=="12" goto PRIVACY
-if /i "%choice%"=="13" goto DEBLOAT
-if /i "%choice%"=="14" goto UNINSTALL_EDGE_ONEDRIVE
-if /i "%choice%"=="15" goto CREATE_RESTORE_POINT
-if /i "%choice%"=="16" goto RESTORE_CENTER
+if /i "%choice%"=="12" goto STARTUP_MANAGER
+if /i "%choice%"=="13" goto PRIVACY
+if /i "%choice%"=="14" goto DEBLOAT
+if /i "%choice%"=="15" goto UNINSTALL_EDGE_ONEDRIVE
+if /i "%choice%"=="16" goto CREATE_RESTORE_POINT
+if /i "%choice%"=="17" goto RESTORE_CENTER
+if /i "%choice%"=="18" goto CONTEXT_MENU_EDITOR
+if /i "%choice%"=="19" goto DWM_TWEAKS
 if /i "%choice%"=="0" goto EXIT
 goto MENU
 
@@ -172,18 +178,26 @@ goto MENU
 
 :ANIM_SERV
 cls
-call :progress "Service Tuning"
-echo [1] Disable unnecessary services (SysMain, Telemetry, Xbox)
-echo [2] Restore default state
-set /p svch="Choose 1/2 or [Enter] to back: "
+echo.
+echo            ╭────────────────────────────────────────────╮
+echo            │    SERVICE TUNING                          │
+echo            ╰────────────────────────────────────────────╯
+echo.
+echo    [1] Disable unnecessary services (SysMain, Telemetry, Xbox)
+echo    [2] Restore original services
+echo    [0] Back to Main Menu
+echo.
+set /p svch="          Choose an option: "
 if "%svch%"=="1" (
-    call :BACKUP "HKLM\SYSTEM\CurrentControlSet\Services\SysMain" "Services_SysMain"
-    call :BACKUP "HKLM\SYSTEM\CurrentControlSet\Services\DiagTrack" "Services_DiagTrack"
-    call :BACKUP "HKLM\SYSTEM\CurrentControlSet\Services\dmwappushservice" "Services_dmwappushservice"
-    call :BACKUP "HKLM\SYSTEM\CurrentControlSet\Services\XblAuthManager" "Services_XblAuthManager"
-    call :BACKUP "HKLM\SYSTEM\CurrentControlSet\Services\XblGameSave" "Services_XblGameSave"
-    call :BACKUP "HKLM\SYSTEM\CurrentControlSet\Services\XboxNetApiSvc" "Services_XboxNetApiSvc"
-    call :BACKUP "HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection" "Services_DataCollection"
+    set "timestamp=%date:~10,4%%date:~4,2%%date:~7,2%_%time:~0,2%%time:~3,2%%time:~6,2%"
+    set "backup_group=%timestamp%_Service_Tweaks"
+    call :BACKUP "HKLM\SYSTEM\CurrentControlSet\Services\SysMain" "Services_SysMain" "%backup_group%"
+    call :BACKUP "HKLM\SYSTEM\CurrentControlSet\Services\DiagTrack" "Services_DiagTrack" "%backup_group%"
+    call :BACKUP "HKLM\SYSTEM\CurrentControlSet\Services\dmwappushservice" "Services_dmwappushservice" "%backup_group%"
+    call :BACKUP "HKLM\SYSTEM\CurrentControlSet\Services\XblAuthManager" "Services_XblAuthManager" "%backup_group%"
+    call :BACKUP "HKLM\SYSTEM\CurrentControlSet\Services\XblGameSave" "Services_XblGameSave" "%backup_group%"
+    call :BACKUP "HKLM\SYSTEM\CurrentControlSet\Services\XboxNetApiSvc" "Services_XboxNetApiSvc" "%backup_group%"
+    call :BACKUP "HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection" "Services_DataCollection" "%backup_group%"
     sc config "SysMain" start=disabled & sc stop "SysMain"
     sc config "DiagTrack" start=disabled & sc stop "DiagTrack"
     sc config "dmwappushservice" start=disabled & sc stop "dmwappushservice"
@@ -200,25 +214,28 @@ if "%svch%"=="1" (
 if "%svch%"=="2" (
     sc config "SysMain" start=auto & sc start "SysMain"
     sc config "DiagTrack" start=auto & sc start "DiagTrack"
-    sc config "dmwappushservice" start=manual
-    sc config "XblAuthManager" start=demand
-    sc config "XblGameSave" start=demand
-    sc config "XboxNetApiSvc" start=demand
-    reg delete "HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection" /v AllowTelemetry /f 2>nul
-    reg delete "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection" /v AllowTelemetry /f 2>nul
+    sc config "dmwappushservice" start=auto & sc start "dmwappushservice"
+    sc config "XblAuthManager" start=auto & sc start "XblAuthManager"
+    sc config "XblGameSave" start=auto & sc start "XblGameSave"
+    sc config "XboxNetApiSvc" start=auto & sc start "XboxNetApiSvc"
+    reg delete "HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection" /v AllowTelemetry /f >nul
+    reg delete "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection" /v AllowTelemetry /f >nul
     echo.
-    echo [STATUS] Services restored.
+    echo [STATUS] Services restored. Restart recommended!
     pause
     goto MENU
 )
-goto MENU
+if "%svch%"=="0" goto MENU
+goto ANIM_SERV
 
 :GAMEMODE
 cls
 call :progress "Gaming Optimization"
-call :BACKUP "HKLM\SYSTEM\CurrentControlSet\Control\Power\User\Settings" "Gaming_PowerSettings"
-call :BACKUP "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" "Gaming_MultimediaProfile"
-call :BACKUP "HKCU\Software\Microsoft\Windows\CurrentVersion\BackgroundAccessApplications" "Gaming_BackgroundApps"
+set "timestamp=%date:~10,4%%date:~4,2%%date:~7,2%_%time:~0,2%%time:~3,2%%time:~6,2%"
+set "backup_group=%timestamp%_Gaming_Tweaks"
+call :BACKUP "HKLM\SYSTEM\CurrentControlSet\Control\Power\User\Settings" "Gaming_PowerSettings" "%backup_group%"
+call :BACKUP "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" "Gaming_MultimediaProfile" "%backup_group%"
+call :BACKUP "HKCU\Software\Microsoft\Windows\CurrentVersion\BackgroundAccessApplications" "Gaming_BackgroundApps" "%backup_group%"
 :: Enable game mode (if applicable)
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\Power\User\Settings" /v GameMode /t REG_DWORD /d 1 /f
 :: Boost GPU/CPU/RAM priority for games
@@ -238,8 +255,10 @@ goto MENU
 :ADVANCED_TWEAKS
 cls
 call :progress "Advanced Windows Tweaks"
-call :BACKUP "HKLM\SOFTWARE\Microsoft\DirectX" "Advanced_DirectX"
-call :BACKUP "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" "Advanced_MemoryManagement"
+set "timestamp=%date:~10,4%%date:~4,2%%date:~7,2%_%time:~0,2%%time:~3,2%%time:~6,2%"
+set "backup_group=%timestamp%_Advanced_Tweaks"
+call :BACKUP "HKLM\SOFTWARE\Microsoft\DirectX" "Advanced_DirectX" "%backup_group%"
+call :BACKUP "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" "Advanced_MemoryManagement" "%backup_group%"
 :: DirectX/VRAM tweaks, prefetch, priority optimization
 reg add "HKLM\SOFTWARE\Microsoft\DirectX" /v EnableAdaptiveSync /t REG_DWORD /d 1 /f
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" /v LargeSystemCache /t REG_DWORD /d 1 /f
@@ -270,14 +289,22 @@ goto MENU
 
 :ANIM_INPUT
 cls
-call :progress "Input Latency"
-echo [1] Apply lowest latency
-echo [2] Restore defaults
-set /p inlat="Choose 1/2 [Enter]-menu: "
+echo.
+echo            ╭────────────────────────────────────────────╮
+echo            │    INPUT LATENCY                           │
+echo            ╰────────────────────────────────────────────╯
+echo.
+echo    [1] Apply lowest latency
+echo    [2] Restore default latency
+echo    [0] Back to Main Menu
+echo.
+set /p inlat="          Choose an option: "
 if "%inlat%"=="1" (
-    call :BACKUP "HKCU\Control Panel\Mouse" "Input_Mouse"
-    call :BACKUP "HKLM\SYSTEM\CurrentControlSet\Services\mouclass\Parameters" "Input_MouseParameters"
-    call :BACKUP "HKLM\SYSTEM\CurrentControlSet\Services\kbdclass\Parameters" "Input_KeyboardParameters"
+    set "timestamp=%date:~10,4%%date:~4,2%%date:~7,2%_%time:~0,2%%time:~3,2%%time:~6,2%"
+    set "backup_group=%timestamp%_Input_Latency"
+    call :BACKUP "HKCU\Control Panel\Mouse" "Input_Mouse" "%backup_group%"
+    call :BACKUP "HKLM\SYSTEM\CurrentControlSet\Services\mouclass\Parameters" "Input_MouseParameters" "%backup_group%"
+    call :BACKUP "HKLM\SYSTEM\CurrentControlSet\Services\kbdclass\Parameters" "Input_KeyboardParameters" "%backup_group%"
     reg add "HKCU\Control Panel\Mouse" /v MouseSensitivity /t REG_SZ /d 10 /f
     reg add "HKCU\Control Panel\Mouse" /v MouseSpeed /t REG_SZ /d 0 /f
     reg add "HKCU\Control Panel\Mouse" /v MouseThreshold1 /t REG_SZ /d 0 /f
@@ -290,27 +317,28 @@ if "%inlat%"=="1" (
     goto MENU
 )
 if "%inlat%"=="2" (
-    reg delete "HKCU\Control Panel\Mouse" /v MouseSensitivity /f 2>nul
-    reg delete "HKCU\Control Panel\Mouse" /v MouseSpeed /f 2>nul
-    reg delete "HKCU\Control Panel\Mouse" /v MouseThreshold1 /f 2>nul
-    reg delete "HKCU\Control Panel\Mouse" /v MouseThreshold2 /f 2>nul
-    reg delete "HKLM\SYSTEM\CurrentControlSet\Services\mouclass\Parameters" /v MouseDataQueueSize /f 2>nul
-    reg delete "HKLM\SYSTEM\CurrentControlSet\Services\kbdclass\Parameters" /v KeyboardDataQueueSize /f 2>nul
+    reg add "HKCU\Control Panel\Mouse" /v MouseSensitivity /t REG_SZ /d 10 /f
+    reg add "HKCU\Control Panel\Mouse" /v MouseSpeed /t REG_SZ /d 1 /f
+    reg add "HKCU\Control Panel\Mouse" /v MouseThreshold1 /t REG_SZ /d 6 /f
+    reg add "HKCU\Control Panel\Mouse" /v MouseThreshold2 /t REG_SZ /d 10 /f
+    reg add "HKLM\SYSTEM\CurrentControlSet\Services\mouclass\Parameters" /v MouseDataQueueSize /t REG_DWORD /d 100 /f
+    reg add "HKLM\SYSTEM\CurrentControlSet\Services\kbdclass\Parameters" /v KeyboardDataQueueSize /t REG_DWORD /d 100 /f
     echo.
-    echo [STATUS] Input latency values restored.
+    echo [STATUS] Input latency restored to default. Restart!
     pause
     goto MENU
 )
-goto MENU
+if "%inlat%"=="0" goto MENU
+goto ANIM_INPUT
 
-:: BACKUP a registry key
+:: BACKUP a registry key. Creates a backup set in a timestamped folder.
 :BACKUP
-set "key=%~1"
-set "desc=%~2"
-set "timestamp=%date:~10,4%%date:~4,2%%date:~7,2%_%time:~0,2%%time:~3,2%%time:~6,2%"
-set "filename=%desc%_%timestamp%.reg"
-if not exist backups md backups
-reg export "%key%" "backups\%filename%" >nul
+set "key_path=%~1"
+set "backup_name=%~2"
+set "group_folder=%~3"
+set "backup_dir=backups\%group_folder%"
+if not exist "%backup_dir%" md "%backup_dir%"
+reg export "%key_path%" "%backup_dir%\%backup_name%.reg" >nul
 exit /b
 
 :RESTORE_CENTER
@@ -320,7 +348,7 @@ echo            ╭────────────────────�
 echo            │    RESTORE CENTER                          │
 echo            ╰────────────────────────────────────────────╯
 echo.
-echo    [1] Restore Registry from Backup
+echo    [1] Restore Registry from Backup Set
 echo    [2] Restore Hosts File
 echo    [0] Back to Main Menu
 echo.
@@ -334,7 +362,7 @@ goto RESTORE_CENTER
 cls
 echo.
 echo            ╭────────────────────────────────────────────╮
-echo            │    RESTORE REGISTRY FROM BACKUP            │
+echo            │    RESTORE REGISTRY FROM BACKUP SET        │
 echo            ╰────────────────────────────────────────────╯
 echo.
 if not exist backups\ (
@@ -342,17 +370,34 @@ if not exist backups\ (
     pause
     goto RESTORE_CENTER
 )
-dir backups\*.reg /b /o:n
-echo.
-set /p "backupfile=Enter backup name to restore (e.g., Services_...reg): "
-if not exist "backups\%backupfile%" (
-    echo [ERROR] Backup file not found.
+setlocal enabledelayedexpansion
+set /a i=0
+echo --- Available Backup Sets ---
+for /d %%d in (backups\*) do (
+    set /a i+=1
+    echo [!i!] %%~nd
+    set "backupfolder[!i!]=%%d"
+)
+if %i% equ 0 (
+    echo [ERROR] No backup sets found.
     pause
     goto RESTORE_CENTER
 )
-reg import "backups\%backupfile%"
 echo.
-echo [STATUS] Restore complete! Restart recommended.
+set /p "choice=Select a backup set to restore (1-%i%): "
+if %choice% gtr 0 if %choice% leq %i% (
+    set "folder_to_restore=!backupfolder[%choice%]!"
+    echo [INFO] Restoring from !folder_to_restore!...
+    for %%f in ("!folder_to_restore!\*.reg") do (
+        echo      - Importing %%~nxf
+        reg import "%%f"
+    )
+    echo.
+    echo [STATUS] Restore complete! Restart recommended.
+) else (
+    echo [ERROR] Invalid selection.
+)
+endlocal
 pause
 goto RESTORE_CENTER
 
@@ -453,8 +498,10 @@ echo.
 set /p "confirm=Are you sure you want to continue? (Y/N): "
 if /i not "%confirm%"=="Y" goto MENU
 call :progress "Applying DWM Tweaks"
-call :BACKUP "HKCU\Software\Microsoft\Windows\Dwm" "DWM_Tweaks_User"
-call :BACKUP "HKLM\SOFTWARE\Microsoft\Windows\Dwm" "DWM_Tweaks_Machine"
+set "timestamp=%date:~10,4%%date:~4,2%%date:~7,2%_%time:~0,2%%time:~3,2%%time:~6,2%"
+set "backup_group=%timestamp%_DWM_Tweaks"
+call :BACKUP "HKCU\Software\Microsoft\Windows\Dwm" "DWM_Tweaks_User" "%backup_group%"
+call :BACKUP "HKLM\SOFTWARE\Microsoft\Windows\Dwm" "DWM_Tweaks_Machine" "%backup_group%"
 reg add "HKCU\Software\Microsoft\Windows\Dwm" /v EnableAeroPeek /t REG_DWORD /d 0 /f
 reg add "HKCU\Software\Microsoft\Windows\Dwm" /v AlwaysShowThumbnails /t REG_DWORD /d 0 /f
 reg add "HKCU\Software\Microsoft\Windows\Dwm" /v ColorPrevalence /t REG_DWORD /d 0 /f
@@ -519,11 +566,13 @@ echo            ╭────────────────────�
 echo            │    ADVANCED PRIVACY                        │
 echo            ╰────────────────────────────────────────────╯
 echo.
-echo [INFO] This will disable telemetry tasks and block data collection domains.
+echo    [1] Apply privacy settings (telemetry, hosts file)
+echo    [2] Restore original privacy settings
+echo    [0] Back to Main Menu
 echo.
-set /p "confirm=Are you sure you want to continue? (Y/N): "
-if /i not "%confirm%"=="Y" goto MENU
-call :progress "Applying privacy settings"
+set /p "privacy_choice=Choose an option: "
+if /i "%privacy_choice%"=="1" (
+    call :progress "Applying privacy settings"
 copy %windir%\System32\drivers\etc\hosts %windir%\System32\drivers\etc\hosts.bak >nul
 (
     echo.
@@ -539,6 +588,19 @@ echo.
 echo [STATUS] Privacy settings applied.
 pause
 goto MENU
+)
+if /i "%privacy_choice%"=="2" (
+    call :RESTORE_HOSTS
+    schtasks /Change /TN "Microsoft\Windows\Customer Experience Improvement Program\Consolidator" /Enable >nul
+    schtasks /Change /TN "Microsoft\Windows\Customer Experience Improvement Program\KernelCeipTask" /Enable >nul
+    schtasks /Change /TN "Microsoft\Windows\Customer Experience Improvement Program\UsbCeip" /Enable >nul
+    echo.
+    echo [STATUS] Privacy settings restored.
+    pause
+    goto MENU
+)
+if /i "%privacy_choice%"=="0" goto MENU
+goto PRIVACY
 
 :UNINSTALL_EDGE_ONEDRIVE
 cls
@@ -593,13 +655,152 @@ echo.
 set /p "confirm=Are you sure you want to continue? (Y/N): "
 if /i not "%confirm%"=="Y" goto MENU
 call :progress "Uninstalling OneDrive"
+set "timestamp=%date:~10,4%%date:~4,2%%date:~7,2%_%time:~0,2%%time:~3,2%%time:~6,2%"
+set "backup_group=%timestamp%_OneDrive_Uninstall"
+call :BACKUP "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace" "OneDrive_Desktop_Namespace" "%backup_group%"
 %SystemRoot%\SysWOW64\OneDriveSetup.exe /uninstall
-call :BACKUP "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace" "OneDrive_Desktop_Namespace"
 reg delete "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace\{018D5C66-4533-4307-9B53-224DE2ED1FE6}" /f >nul
 echo.
 echo [STATUS] OneDrive has been uninstalled.
 pause
 goto MENU
+
+:STARTUP_MANAGER
+cls
+echo.
+echo            ╭────────────────────────────────────────────╮
+echo            │    STARTUP MANAGER                         │
+echo            ╰────────────────────────────────────────────╯
+echo.
+echo    [1] List Startup Programs
+echo    [2] Remove a Startup Program
+echo    [0] Back to Main Menu
+echo.
+set /p "startup_choice=Select an option: "
+if /i "%startup_choice%"=="1" goto LIST_STARTUP
+if /i "%startup_choice%"=="2" goto REMOVE_STARTUP
+if /i "%startup_choice%"=="0" goto MENU
+goto STARTUP_MANAGER
+
+:LIST_STARTUP
+cls
+echo.
+echo            ╭────────────────────────────────────────────╮
+echo            │    LIST STARTUP PROGRAMS                   │
+echo            ╰────────────────────────────────────────────╯
+echo.
+echo [INFO] Querying startup registry keys...
+echo.
+echo --- HKEY_CURRENT_USER ---
+reg query "HKCU\Software\Microsoft\Windows\CurrentVersion\Run"
+echo.
+echo --- HKEY_LOCAL_MACHINE ---
+reg query "HKLM\Software\Microsoft\Windows\CurrentVersion\Run"
+echo.
+echo [STATUS] Startup programs listed.
+pause
+goto STARTUP_MANAGER
+
+:REMOVE_STARTUP
+cls
+echo.
+echo            ╭────────────────────────────────────────────╮
+echo            │    REMOVE A STARTUP PROGRAM                │
+echo            ╰────────────────────────────────────────────╯
+echo.
+set /p "startup_name=Enter the name of the startup program to remove: "
+if "%startup_name%"=="" goto STARTUP_MANAGER
+set "timestamp=%date:~10,4%%date:~4,2%%date:~7,2%_%time:~0,2%%time:~3,2%%time:~6,2%"
+set "backup_group=%timestamp%_Startup_Manager"
+call :BACKUP "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" "Startup_Run_User" "%backup_group%"
+call :BACKUP "HKLM\Software\Microsoft\Windows\CurrentVersion\Run" "Startup_Run_Machine" "%backup_group%"
+reg delete "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" /v "%startup_name%" /f >nul
+reg delete "HKLM\Software\Microsoft\Windows\CurrentVersion\Run" /v "%startup_name%" /f >nul
+echo.
+echo [STATUS] Attempted to remove "%startup_name%".
+pause
+goto STARTUP_MANAGER
+
+:CONTEXT_MENU_EDITOR
+cls
+echo.
+echo            ╭────────────────────────────────────────────╮
+echo            │    DESKTOP CONTEXT MENU EDITOR             │
+echo            ╰────────────────────────────────────────────╯
+echo.
+echo    [1] Add 'Copy To'/'Move To'
+echo    [2] Remove 'Copy To'/'Move To'
+echo    [3] Add 'Take Ownership'
+echo    [4] Remove 'Take Ownership'
+echo    [0] Back to Main Menu
+echo.
+set /p "context_choice=Select an option: "
+if /i "%context_choice%"=="1" goto ADD_COPY_MOVE
+if /i "%context_choice%"=="2" goto REMOVE_COPY_MOVE
+if /i "%context_choice%"=="3" goto ADD_TAKE_OWNERSHIP
+if /i "%context_choice%"=="4" goto REMOVE_TAKE_OWNERSHIP
+if /i "%context_choice%"=="0" goto MENU
+goto CONTEXT_MENU_EDITOR
+
+:ADD_COPY_MOVE
+cls
+call :progress "Adding 'Copy To'/'Move To'"
+set "timestamp=%date:~10,4%%date:~4,2%%date:~7,2%_%time:~0,2%%time:~3,2%%time:~6,2%"
+set "backup_group=%timestamp%_ContextMenu_CopyMove"
+call :BACKUP "HKCR\AllFilesystemObjects\shellex\ContextMenuHandlers\CopyTo" "ContextMenu_CopyTo" "%backup_group%"
+call :BACKUP "HKCR\AllFilesystemObjects\shellex\ContextMenuHandlers\MoveTo" "ContextMenu_MoveTo" "%backup_group%"
+reg add "HKCR\AllFilesystemObjects\shellex\ContextMenuHandlers\CopyTo" /ve /d "{C2FBB630-2971-11D1-A18C-00C04FD75D13}" /f >nul
+reg add "HKCR\AllFilesystemObjects\shellex\ContextMenuHandlers\MoveTo" /ve /d "{C2FBB631-2971-11D1-A18C-00C04FD75D13}" /f >nul
+echo.
+echo [STATUS] 'Copy To'/'Move To' added to the context menu.
+pause
+goto CONTEXT_MENU_EDITOR
+
+:REMOVE_COPY_MOVE
+cls
+call :progress "Removing 'Copy To'/'Move To'"
+set "timestamp=%date:~10,4%%date:~4,2%%date:~7,2%_%time:~0,2%%time:~3,2%%time:~6,2%"
+set "backup_group=%timestamp%_ContextMenu_CopyMove_Removal"
+call :BACKUP "HKCR\AllFilesystemObjects\shellex\ContextMenuHandlers\CopyTo" "ContextMenu_CopyTo_Removal" "%backup_group%"
+call :BACKUP "HKCR\AllFilesystemObjects\shellex\ContextMenuHandlers\MoveTo" "ContextMenu_MoveTo_Removal" "%backup_group%"
+reg delete "HKCR\AllFilesystemObjects\shellex\ContextMenuHandlers\CopyTo" /f >nul
+reg delete "HKCR\AllFilesystemObjects\shellex\ContextMenuHandlers\MoveTo" /f >nul
+echo.
+echo [STATUS] 'Copy To'/'Move To' removed from the context menu.
+pause
+goto CONTEXT_MENU_EDITOR
+
+:ADD_TAKE_OWNERSHIP
+cls
+call :progress "Adding 'Take Ownership'"
+set "timestamp=%date:~10,4%%date:~4,2%%date:~7,2%_%time:~0,2%%time:~3,2%%time:~6,2%"
+set "backup_group=%timestamp%_ContextMenu_TakeOwnership"
+call :BACKUP "HKCR\*\shell\runas" "ContextMenu_TakeOwnershipFile" "%backup_group%"
+call :BACKUP "HKCR\Directory\shell\runas" "ContextMenu_TakeOwnershipDir" "%backup_group%"
+reg add "HKCR\*\shell\runas" /ve /d "Take Ownership" /f >nul
+reg add "HKCR\*\shell\runas" /v "NoWorkingDirectory" /t REG_SZ /d "" /f >nul
+reg add "HKCR\*\shell\runas\command" /ve /d "cmd.exe /c takeown /f \"%1\" && icacls \"%1\" /grant administrators:F" /f >nul
+reg add "HKCR\Directory\shell\runas" /ve /d "Take Ownership" /f >nul
+reg add "HKCR\Directory\shell\runas" /v "NoWorkingDirectory" /t REG_SZ /d "" /f >nul
+reg add "HKCR\Directory\shell\runas\command" /ve /d "cmd.exe /c takeown /f \"%1\" /r /d y && icacls \"%1\" /grant administrators:F /t" /f >nul
+echo.
+echo [STATUS] 'Take Ownership' added to the context menu.
+pause
+goto CONTEXT_MENU_EDITOR
+
+:REMOVE_TAKE_OWNERSHIP
+cls
+call :progress "Removing 'Take Ownership'"
+set "timestamp=%date:~10,4%%date:~4,2%%date:~7,2%_%time:~0,2%%time:~3,2%%time:~6,2%"
+set "backup_group=%timestamp%_ContextMenu_TakeOwnership_Removal"
+call :BACKUP "HKCR\*\shell\runas" "ContextMenu_TakeOwnershipFile_Removal" "%backup_group%"
+call :BACKUP "HKCR\Directory\shell\runas" "ContextMenu_TakeOwnershipDir_Removal" "%backup_group%"
+reg delete "HKCR\*\shell\runas" /f >nul
+reg delete "HKCR\Directory\shell\runas" /f >nul
+echo.
+echo [STATUS] 'Take Ownership' removed from the context menu.
+pause
+goto CONTEXT_MENU_EDITOR
 
 :EXIT
 cls
