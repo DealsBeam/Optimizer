@@ -1,0 +1,20 @@
+<Window
+    x:Class="OptimizerGUI.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid>
+        <NavigationView x:Name="NavigationView" PaneDisplayMode="Left" SelectionChanged="NavigationView_SelectionChanged">
+            <NavigationView.MenuItems>
+                <NavigationViewItem Content="System &amp; Network" Tag="SystemAndNetwork" Icon="Setting"/>
+                <NavigationViewItem Content="Cleaning &amp; Debloat" Tag="CleaningAndDebloat" Icon="Delete"/>
+                <NavigationViewItem Content="Management &amp; Customization" Tag="ManagementAndCustomization" Icon="Repair"/>
+                <NavigationViewItem Content="System &amp; Safety" Tag="SystemAndSafety" Icon="Permissions"/>
+            </NavigationView.MenuItems>
+            <Frame x:Name="ContentFrame"/>
+        </NavigationView>
+    </Grid>
+</Window>

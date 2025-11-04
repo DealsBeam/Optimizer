@@ -1,0 +1,19 @@
+<Page
+    x:Class="OptimizerGUI.Views.ManagementAndCustomizationPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <StackPanel Spacing="10" Padding="20">
+        <TextBlock Text="Management &amp; Customization" Style="{ThemeResource TitleTextBlockStyle}" />
+        <Button Content="App Manager" Click="AppManager_Click" />
+        <Button Content="Startup Manager" Click="StartupManager_Click" />
+        <Button Content="Windows Features Manager" Click="WindowsFeaturesManager_Click" />
+        <Button Content="Desktop Context Menu Editor" Click="DesktopContextMenuEditor_Click" />
+        <Button Content="UI &amp; Personalization" Click="UIAndPersonalization_Click" />
+        <Button Content="Taskbar Customization" Click="TaskbarCustomization_Click" />
+        <Button Content="DWM Tweaks" Click="DWMTweaks_Click" />
+    </StackPanel>
+</Page>
