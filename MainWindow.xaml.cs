@@ -24,12 +24,21 @@ namespace OptimizerGUI
                 var selectedItem = (NavigationViewItem)args.SelectedItem;
                 if (selectedItem != null)
                 {
-                    string selectedItemTag = ((string)selectedItem.Tag);
-
-                    Type pageType = Type.GetType($"OptimizerGUI.Views.{selectedItemTag}Page");
-                    if (pageType != null)
+                    string selectedItemTag = (string)selectedItem.Tag;
+                    switch (selectedItemTag)
                     {
-                        ContentFrame.Navigate(pageType);
+                        case "SystemAndNetwork":
+                            ContentFrame.Navigate(typeof(SystemAndNetworkPage));
+                            break;
+                        case "CleaningAndDebloat":
+                            ContentFrame.Navigate(typeof(CleaningAndDebloatPage));
+                            break;
+                        case "ManagementAndCustomization":
+                            ContentFrame.Navigate(typeof(ManagementAndCustomizationPage));
+                            break;
+                        case "SystemAndSafety":
+                            ContentFrame.Navigate(typeof(SystemAndSafetyPage));
+                            break;
                     }
                 }
             }
