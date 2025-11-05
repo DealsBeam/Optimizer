@@ -7,16 +7,27 @@ using System.Threading.Tasks;
 
 namespace OptimizerGUI.Views
 {
+    /// <summary>
+    /// Represents the page for the System and Network feature.
+    /// </summary>
     public sealed partial class SystemAndNetworkPage : Page
     {
         private SystemAndNetworkViewModel ViewModel { get; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SystemAndNetworkPage"/> class.
+        /// </summary>
         public SystemAndNetworkPage()
         {
             this.InitializeComponent();
             ViewModel = new SystemAndNetworkViewModel();
         }
 
+        /// <summary>
+        /// Handles the click event for the optimize network button.
+        /// </summary>
+        /// <param name="sender">The sender of the event.</param>
+        /// <param name="e">The event arguments.</param>
         private async void OptimizeNetwork_Click(object sender, RoutedEventArgs e)
         {
             ProgressRing.IsActive = true;
@@ -39,6 +50,11 @@ namespace OptimizerGUI.Views
             }
         }
 
+        /// <summary>
+        /// Handles the click event for the optimize DNS button.
+        /// </summary>
+        /// <param name="sender">The sender of the event.</param>
+        /// <param name="e">The event arguments.</param>
         private async void OptimizeDNS_Click(object sender, RoutedEventArgs e)
         {
             ProgressRing.IsActive = true;
@@ -61,6 +77,11 @@ namespace OptimizerGUI.Views
             }
         }
 
+        /// <summary>
+        /// Handles the click event for the reset network adapter button.
+        /// </summary>
+        /// <param name="sender">The sender of the event.</param>
+        /// <param name="e">The event arguments.</param>
         private async void ResetNetworkAdapter_Click(object sender, RoutedEventArgs e)
         {
             ProgressRing.IsActive = true;
@@ -83,6 +104,11 @@ namespace OptimizerGUI.Views
             }
         }
 
+        /// <summary>
+        /// Handles the click event for the manage services button.
+        /// </summary>
+        /// <param name="sender">The sender of the event.</param>
+        /// <param name="e">The event arguments.</param>
         private async void ManageServices_Click(object sender, RoutedEventArgs e)
         {
             var confirmed = await DialogHelper.ShowWarningDialog(
@@ -122,6 +148,11 @@ namespace OptimizerGUI.Views
             }
         }
 
+        /// <summary>
+        /// Handles the click event for the input latency tweaks button.
+        /// </summary>
+        /// <param name="sender">The sender of the event.</param>
+        /// <param name="e">The event arguments.</param>
         private async void InputLatencyTweaks_Click(object sender, RoutedEventArgs e)
         {
             ProgressRing.IsActive = true;
@@ -144,6 +175,11 @@ namespace OptimizerGUI.Views
             }
         }
 
+        /// <summary>
+        /// Handles the click event for the game mode button.
+        /// </summary>
+        /// <param name="sender">The sender of the event.</param>
+        /// <param name="e">The event arguments.</param>
         private async void GameMode_Click(object sender, RoutedEventArgs e)
         {
             ProgressRing.IsActive = true;
@@ -166,6 +202,11 @@ namespace OptimizerGUI.Views
             }
         }
 
+        /// <summary>
+        /// Handles the click event for the advanced Windows tweaks button.
+        /// </summary>
+        /// <param name="sender">The sender of the event.</param>
+        /// <param name="e">The event arguments.</param>
         private async void AdvancedWindowsTweaks_Click(object sender, RoutedEventArgs e)
         {
             var confirmed = await DialogHelper.ShowWarningDialog(
@@ -205,6 +246,11 @@ namespace OptimizerGUI.Views
             }
         }
 
+        /// <summary>
+        /// Handles the click event for the ultimate performance button.
+        /// </summary>
+        /// <param name="sender">The sender of the event.</param>
+        /// <param name="e">The event arguments.</param>
         private async void UltimatePerformance_Click(object sender, RoutedEventArgs e)
         {
             ProgressRing.IsActive = true;

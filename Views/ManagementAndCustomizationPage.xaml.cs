@@ -7,16 +7,27 @@ using System.Threading.Tasks;
 
 namespace OptimizerGUI.Views
 {
+    /// <summary>
+    /// Represents the page for the Management and Customization feature.
+    /// </summary>
     public sealed partial class ManagementAndCustomizationPage : Page
     {
         private ManagementAndCustomizationViewModel ViewModel { get; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ManagementAndCustomizationPage"/> class.
+        /// </summary>
         public ManagementAndCustomizationPage()
         {
             this.InitializeComponent();
             ViewModel = new ManagementAndCustomizationViewModel();
         }
 
+        /// <summary>
+        /// Handles the click event for the app manager button.
+        /// </summary>
+        /// <param name="sender">The sender of the event.</param>
+        /// <param name="e">The event arguments.</param>
         private async void AppManager_Click(object sender, RoutedEventArgs e)
         {
             ProgressRing.IsActive = true;
@@ -39,6 +50,11 @@ namespace OptimizerGUI.Views
             }
         }
 
+        /// <summary>
+        /// Handles the click event for the startup manager button.
+        /// </summary>
+        /// <param name="sender">The sender of the event.</param>
+        /// <param name="e">The event arguments.</param>
         private async void StartupManager_Click(object sender, RoutedEventArgs e)
         {
             ProgressRing.IsActive = true;
@@ -59,6 +75,11 @@ namespace OptimizerGUI.Views
             }
         }
 
+        /// <summary>
+        /// Handles the click event for the Windows features manager button.
+        /// </summary>
+        /// <param name="sender">The sender of the event.</param>
+        /// <param name="e">The event arguments.</param>
         private async void WindowsFeaturesManager_Click(object sender, RoutedEventArgs e)
         {
             ProgressRing.IsActive = true;
@@ -81,6 +102,11 @@ namespace OptimizerGUI.Views
             }
         }
 
+        /// <summary>
+        /// Handles the click event for the desktop context menu editor button.
+        /// </summary>
+        /// <param name="sender">The sender of the event.</param>
+        /// <param name="e">The event arguments.</param>
         private async void DesktopContextMenuEditor_Click(object sender, RoutedEventArgs e)
         {
             ProgressRing.IsActive = true;
@@ -103,6 +129,11 @@ namespace OptimizerGUI.Views
             }
         }
 
+        /// <summary>
+        /// Handles the click event for the UI and personalization button.
+        /// </summary>
+        /// <param name="sender">The sender of the event.</param>
+        /// <param name="e">The event arguments.</param>
         private async void UIAndPersonalization_Click(object sender, RoutedEventArgs e)
         {
             ProgressRing.IsActive = true;
@@ -125,6 +156,11 @@ namespace OptimizerGUI.Views
             }
         }
 
+        /// <summary>
+        /// Handles the click event for the taskbar customization button.
+        /// </summary>
+        /// <param name="sender">The sender of the event.</param>
+        /// <param name="e">The event arguments.</param>
         private async void TaskbarCustomization_Click(object sender, RoutedEventArgs e)
         {
             ProgressRing.IsActive = true;
@@ -147,6 +183,11 @@ namespace OptimizerGUI.Views
             }
         }
 
+        /// <summary>
+        /// Handles the click event for the DWM tweaks button.
+        /// </summary>
+        /// <param name="sender">The sender of the event.</param>
+        /// <param name="e">The event arguments.</param>
         private async void DWMTweaks_Click(object sender, RoutedEventArgs e)
         {
             ProgressRing.IsActive = true;
