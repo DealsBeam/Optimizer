@@ -3,21 +3,16 @@ using Microsoft.UI.Xaml.Controls;
 using OptimizerGUI.ViewModels;
 using OptimizerGUI.Helpers;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace OptimizerGUI.Views
 {
-    /// <summary>
-    /// Represents the page for the Advanced Debloater feature.
-    /// </summary>
     public sealed partial class AdvancedDebloaterPage : Page
     {
         private AdvancedDebloaterViewModel ViewModel { get; }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AdvancedDebloaterPage"/> class.
-        /// </summary>
         public AdvancedDebloaterPage()
         {
             this.InitializeComponent();
@@ -25,11 +20,6 @@ namespace OptimizerGUI.Views
             Loaded += OnPageLoaded;
         }
 
-        /// <summary>
-        /// Handles the page loaded event.
-        /// </summary>
-        /// <param name="sender">The sender of the event.</param>
-        /// <param name="e">The event arguments.</param>
         private async void OnPageLoaded(object sender, RoutedEventArgs e)
         {
             ProgressRing.IsActive = true;
@@ -50,11 +40,6 @@ namespace OptimizerGUI.Views
             }
         }
 
-        /// <summary>
-        /// Handles the click event for the uninstall button.
-        /// </summary>
-        /// <param name="sender">The sender of the event.</param>
-        /// <param name="e">The event arguments.</param>
         private async void UninstallButton_Click(object sender, RoutedEventArgs e)
         {
             var selectedApps = AppsListView.SelectedItems.Cast<string>().ToList();
