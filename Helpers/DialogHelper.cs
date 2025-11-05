@@ -1,19 +1,12 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using System;
 using System.Threading.Tasks;
 
 namespace OptimizerGUI.Helpers
 {
-    /// <summary>
-    /// Provides helper methods for displaying dialogs.
-    /// </summary>
     public static class DialogHelper
     {
-        /// <summary>
-        /// Shows an error dialog.
-        /// </summary>
-        /// <param name="message">The message to display in the dialog.</param>
-        /// <param name="xamlRoot">The <see cref="XamlRoot"/> for the dialog.</param>
         public static async Task ShowErrorDialog(string message, XamlRoot xamlRoot)
         {
             ContentDialog dialog = new ContentDialog
@@ -26,12 +19,6 @@ namespace OptimizerGUI.Helpers
             await dialog.ShowAsync();
         }
 
-        /// <summary>
-        /// Shows a message dialog.
-        /// </summary>
-        /// <param name="title">The title of the dialog.</param>
-        /// <param name="message">The message to display in the dialog.</param>
-        /// <param name="xamlRoot">The <see cref="XamlRoot"/> for the dialog.</param>
         public static async Task ShowMessageDialog(string title, string message, XamlRoot xamlRoot)
         {
             ContentDialog dialog = new ContentDialog
@@ -44,11 +31,6 @@ namespace OptimizerGUI.Helpers
             await dialog.ShowAsync();
         }
 
-        /// <summary>
-        /// Shows a success dialog.
-        /// </summary>
-        /// <param name="message">The message to display in the dialog.</param>
-        /// <param name="xamlRoot">The <see cref="XamlRoot"/> for the dialog.</param>
         public static async Task ShowSuccessDialog(string message, XamlRoot xamlRoot)
         {
             ContentDialog dialog = new ContentDialog
@@ -61,15 +43,6 @@ namespace OptimizerGUI.Helpers
             await dialog.ShowAsync();
         }
 
-        /// <summary>
-        /// Shows a confirmation dialog.
-        /// </summary>
-        /// <param name="title">The title of the dialog.</param>
-        /// <param name="message">The message to display in the dialog.</param>
-        /// <param name="primaryButtonText">The text for the primary button.</param>
-        /// <param name="secondaryButtonText">The text for the secondary button.</param>
-        /// <param name="xamlRoot">The <see cref="XamlRoot"/> for the dialog.</param>
-        /// <returns><c>true</c> if the primary button is clicked; otherwise, <c>false</c>.</returns>
         public static async Task<bool> ShowConfirmationDialog(string title, string message, string primaryButtonText = "Continue", string secondaryButtonText = "Cancel", XamlRoot xamlRoot)
         {
             ContentDialog dialog = new ContentDialog
@@ -86,13 +59,6 @@ namespace OptimizerGUI.Helpers
             return result == ContentDialogResult.Primary;
         }
 
-        /// <summary>
-        /// Shows a warning dialog.
-        /// </summary>
-        /// <param name="operation">The name of the operation being performed.</param>
-        /// <param name="consequences">The potential consequences of the operation.</param>
-        /// <param name="xamlRoot">The <see cref="XamlRoot"/> for the dialog.</param>
-        /// <returns><c>true</c> if the user confirms the operation; otherwise, <c>false</c>.</returns>
         public static async Task<bool> ShowWarningDialog(string operation, string consequences, XamlRoot xamlRoot)
         {
             var message = $"⚠️ Warning\n\n" +

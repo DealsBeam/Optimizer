@@ -7,27 +7,16 @@ using System.Threading.Tasks;
 
 namespace OptimizerGUI.Views
 {
-    /// <summary>
-    /// Represents the page for the Cleaning and Debloat feature.
-    /// </summary>
     public sealed partial class CleaningAndDebloatPage : Page
     {
         private CleaningAndDebloatViewModel ViewModel { get; }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CleaningAndDebloatPage"/> class.
-        /// </summary>
         public CleaningAndDebloatPage()
         {
             this.InitializeComponent();
             ViewModel = new CleaningAndDebloatViewModel();
         }
 
-        /// <summary>
-        /// Handles the click event for the system cleaner button.
-        /// </summary>
-        /// <param name="sender">The sender of the event.</param>
-        /// <param name="e">The event arguments.</param>
         private async void SystemCleaner_Click(object sender, RoutedEventArgs e)
         {
             ProgressRing.IsActive = true;
@@ -50,11 +39,6 @@ namespace OptimizerGUI.Views
             }
         }
 
-        /// <summary>
-        /// Handles the click event for the extended cleaner button.
-        /// </summary>
-        /// <param name="sender">The sender of the event.</param>
-        /// <param name="e">The event arguments.</param>
         private async void ExtendedCleaner_Click(object sender, RoutedEventArgs e)
         {
             ProgressRing.IsActive = true;
@@ -77,11 +61,6 @@ namespace OptimizerGUI.Views
             }
         }
 
-        /// <summary>
-        /// Handles the click event for the junk finder button.
-        /// </summary>
-        /// <param name="sender">The sender of the event.</param>
-        /// <param name="e">The event arguments.</param>
         private async void JunkFinder_Click(object sender, RoutedEventArgs e)
         {
             ProgressRing.IsActive = true;
@@ -104,11 +83,6 @@ namespace OptimizerGUI.Views
             }
         }
 
-        /// <summary>
-        /// Handles the click event for the remove bloatware button.
-        /// </summary>
-        /// <param name="sender">The sender of the event.</param>
-        /// <param name="e">The event arguments.</param>
         private async void RemoveBloatware_Click(object sender, RoutedEventArgs e)
         {
             var confirmed = await DialogHelper.ShowWarningDialog(
@@ -154,11 +128,6 @@ namespace OptimizerGUI.Views
             this.Frame.Navigate(typeof(AdvancedDebloaterPage));
         }
 
-        /// <summary>
-        /// Handles the click event for the uninstall Edge and OneDrive button.
-        /// </summary>
-        /// <param name="sender">The sender of the event.</param>
-        /// <param name="e">The event arguments.</param>
         private async void UninstallEdgeAndOneDrive_Click(object sender, RoutedEventArgs e)
         {
             var confirmed = await DialogHelper.ShowWarningDialog(
@@ -199,11 +168,6 @@ namespace OptimizerGUI.Views
             }
         }
 
-        /// <summary>
-        /// Handles the click event for the scheduled cleaning button.
-        /// </summary>
-        /// <param name="sender">The sender of the event.</param>
-        /// <param name="e">The event arguments.</param>
         private async void ScheduledCleaning_Click(object sender, RoutedEventArgs e)
         {
             ProgressRing.IsActive = true;
