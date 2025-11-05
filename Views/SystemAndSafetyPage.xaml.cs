@@ -92,6 +92,11 @@ namespace OptimizerGUI.Views
             }
         }
 
+        /// <summary>
+        /// Handles the click event for the create restore point button.
+        /// </summary>
+        /// <param name="sender">The sender of the event.</param>
+        /// <param name="e">The event arguments.</param>
         private async void CreateRestorePoint_Click(object sender, RoutedEventArgs e)
         {
             ProgressRing.IsActive = true;
