@@ -3,7 +3,6 @@ using Microsoft.UI.Xaml.Controls;
 using OptimizerGUI.ViewModels;
 using OptimizerGUI.Helpers;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
